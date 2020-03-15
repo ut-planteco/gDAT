@@ -1,0 +1,840 @@
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>gDAT pipeline manual</title>
+	</head>
+	<body>
+<style>
+img {
+	padding: 5px;
+	margin: 5px;
+	border: 1px solid #ccc;
+	cursor: hand;
+	cursor: pointer;
+}
+img.right {
+	float: right;
+	max-width: 50%;
+}
+img.full {
+	max-width: 95%;
+	text-align: center;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+body {
+	color: #000;
+	font-size: 110%;
+	line-height: 125%;
+	background: #eee;
+	padding: 15px;
+	max-width: 1024px;
+	margin: auto;
+}
+input[type="button"] {
+	padding: 5px;
+	background: #eee;
+	border: 1px solid #ccc;
+}
+body.invert {
+	background: #222;
+	color: #ddd;
+}
+body.invert .well {
+	background: #444;
+}
+body.invert img {
+	filter: invert(100%);
+}
+a {
+	color: #33f;
+	transition: 0.3s all;
+}
+a:hover {
+	color: #337;
+	text-decoration: none;
+}
+body.invert a {
+	color: #aaf;
+}
+body.invert a:hover {
+	color: #fff;
+}
+h1, h2, h3 {
+	clear: both;
+}
+h1, h2, h3 { line-height: 120%; }
+code {
+	clear: both;
+	white-space: pre;
+	margin: 5px;
+	padding: 5px;
+	color: #fff;
+	background: #000;
+	display: block;
+	overflow-x: auto !important;
+	max-width: 100%;
+}
+header {
+	position: fixed;
+	top: 0px;
+	padding: 10px;
+	right: 0px;
+	z-index: 1;
+	text-align: right;
+}
+.short {
+	display: inline-block;
+	overflow: inherit;
+}
+table {
+	width: 100%;
+	border-collapse: collapse;
+	border: 1px solid #777;
+}
+table td, table th {
+	vertical-align: top;
+	text-align: left;
+	padding: 5px;
+	border: 1px solid #777;
+}
+table tr th {
+	width: 25%;
+}
+.toggle-shadow {
+	display: none;
+	position: fixed;
+	top: 0px; right: 0px; bottom: 0px; left: 0px;
+	background: rgba(0, 0, 0, 0.5);
+	cursor: hand;
+	cursor: pointer;
+	z-index: 1;
+}
+.toggle-picture {
+	display: none;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 2;
+}
+.toggle-picture img {
+	border: 0px;
+	padding: 0px;
+	margin: 0px;
+	max-width: 90vw;
+}
+.toggle-shadow.visible, .toggle-picture.visible {
+	display: block;
+}
+.well {
+	margin: 5px;
+	padding: 10px;
+	border: 1px solid #777;
+	background: #efe;
+}
+.selector {
+	position: fixed;
+	top: 10px;
+	left: 95vw;
+	max-height: 90vh;
+	overflow-y: auto;
+	width: 500px;
+	padding: 20px;
+	background: #fff;
+	border: 1px solid #ccc;
+	max-width: 90%;
+	transition: 0.3s all;
+}
+.selector a {
+	color: #000;
+	text-decoration: none;
+	padding: 5px;
+	margin-bottom: 5px;
+	display: block;
+	transition: 0.3s all;
+}
+.selector h1 {
+	margin: 0px;
+	padding: 0px;
+}
+.selector a:hover {
+	background: #000;
+	color: #fff;
+}
+.selector ul, .selector li { list-style: none; padding: 0px; margin: 0px; }
+.selector:hover {
+	margin-left: -460px;
+	z-index: 10;
+}
+body.invert .selector {
+	background: #333;
+	color: #fff;
+}
+body.invert .selector a {
+	color: #fff;
+}
+body.invert .selector a:hover {
+	color: #333;
+	background: #eee;
+}
+@media screen and (max-width: 600px){
+	img {
+		max-width: 100%;
+		width: 90%;
+		float: inherit;
+		text-align: center;
+	}
+	.toggle-picture img {
+		max-width: 100vw;
+		width: inherit;
+	}
+	table:not(.scrollable) {
+		border: 0px;
+		margin-top: 20px;
+		margin-bottom: 20px;
+	}
+	table:not(.scrollable) tr th {
+		width: 100%;
+		display: block;
+		border: 0px;
+		border-bottom: 2px solid #777;
+		background: #fff;
+	}
+	body.invert table:not(.scrollable) tr th {
+		background: #555;
+	}
+	table:not(.scrollable) tr td {
+		width: 100%;
+		display: block;
+		border: 0px;
+		border-bottom: 1px solid #777;
+	}
+	.scrollable-wrapper {
+		max-width: 100vw;
+		overflow-x: auto;
+	}
+}
+@media print {
+	input, .selector { display: none; }
+}
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+	var images = document.querySelectorAll("img");
+	for(var i = 0; i < images.length; i++){
+		images[i].addEventListener("click", function(){
+			document.getElementById("toggle-picture-img").src = this.src;
+			document.getElementById("toggle-shadow").classList.add("visible");
+			document.getElementById("toggle-picture").classList.add("visible");
+		}, false);
+	}
+});
+function hide(){
+	document.getElementById("toggle-shadow").classList.remove("visible");
+	document.getElementById("toggle-picture").classList.remove("visible");
+}
+</script>
+<header>
+<input type="button" name="button" value="Invert colors" onclick="document.querySelector('body').classList.toggle('invert')">
+<!--div class="right">
+	Index
+	<div class="index">
+		<a href="#h1">
+
+		</a>
+	</div>
+</div-->
+</header>
+<div class="toggle-shadow" id="toggle-shadow" onclick="hide()"></div>
+<div class="toggle-picture" id="toggle-picture" onclick="hide()"><img src="" id="toggle-picture-img"></div>
+<h1>gDAT pipeline instructions</h1>
+<a href="tutorial.html">Click here for a tutorial using demultiplexed Illumina paired-end reads</a>
+
+<h2>Graphical interface overview</h2>
+<img src="assets/pipeline_main.png" class="right">
+To start the pipeline, click on "gdat.py" or run from the terminal using the following command: <br><code class="short">python gdat.py</code><br>Both Python version 2 and 3 are supported. The Python TKinter package needs to be installed (<a href="https://www.python.org/downloads/">for Windows click here, (re)install Python and tick the checkbox for the tkinter option</a>), macOS has TKinter already installed and in Linux Debian use the following command (for other distribution, search from online how to install packages):<br>
+<code class="short">sudo apt install python-tk</code> 
+<br><br>
+The graphical interface helps users to construct commands without needing to use the terminal or command line prompt. This helps to avoid common errors made while entering parameters or mistyped names. The interface provides a general workflow to analyse SSU fungal data using the Maarj<i>AM</i> database, but is applicable for wide range of organisms and amplicons. Analysis can be conducted using de novo, closed- or open-OTU (operation taxonomic unit) picking. 
+<br><br>
+The home window provides all the tools needed for data analysis. The left side panel contains a numbered series of logical analytical steps. Some of the provided steps are optional and used when clustering approach is conducted. Clustering method can be used with de novo or open-reference OTU picking. Clustering can reduce computational complexity and time and may be necessary with commodity hardware. The right panel provides additional tools to convert database and file formats and use GenBank/NCBI BLAST+ capabilities.
+<br><br>
+The figures on the top or the right for each section is an example screenshot of the interface, showing different fields users can modify. Files can be selected by users (by clicking on the OPEN button) through the graphical interface, without needing to write out filenames manually. The Open dialog provides the most common extension names for each file opening, so the user sees only the necessary files. Hovering the mouse over field names accompanied by (?) marks will show helpful tooltips with additional information about parameters. Some parameters are accompanied by checkboxes. To use the parameter, the user nees to check the box. After filling out the form, users can click "Run command"; if required fields are missing, an error is returned with the information which mandatory parameter or file is missing. After a command is sucessfully run, a new window with terminal output opens showing output from the command or, if an error occurs, output error messages from the tool. Users should wait for "Process finished" text before closing the application; otherwise the command will be terminated before it is complete. The output also displays where files have been written, which is important information for subsequent analytical steps. The terminal window includes a terminate button at the bottom of the window to abort the job if incorrect parameters have been used or if a process is taking too long. After clicking "Run command", the input window remains open so users can mofity existing parameters to fine-tune the command if necessary. To successfully close the pipeline graphical interface, all windows needs to be closed; otherwise the pipeline keeps running in the background. All commands output information into the file "pipeline.log" inside the pipeline folder to track pipeline activity, making it simple to recap what has been done with the data. Users can sort files based on date to easily identify most recently generated file. 
+<h1>Example data</h1>
+Example data from different sequencing platforms are provided in the example/ folder. The data sets are small (smaller than a typical analysis) to reduce the space requirement.
+<h2>Prerequisites</h2>
+The pipeline needs certain third party software in order to complete all functions. The clustering, chimera checking and identifying reads steps use these additonal tools. The programs are in binary format, meaning that for each operating system the correct binary file needs to be used. The pipeline is provides prebuilt binaries to simplify the installation process. These are accessible from the GitHub releases section: <a href="https://github.com/utplanteco/gDAT/releases">https://github.com/utplanteco/gDAT/releases</a>
+<div class="scrollable-wrapper">
+	<table class="scrollable">
+		<tr>
+			<th>Program</th>
+			<th>Steps used</th>
+			<th>Compatible version</th>
+			<th>Source</th>
+		</tr>
+		<tr>
+			<td>FLASH</td>
+			<td>combining paired-end reads</td>
+			<td>1.2.11</td>
+			<td><a href="https://sourceforge.net/projects/flashpage/" target="_blank">sourceforge.net/projects/flashpage/</a></td>
+		</tr>
+		<tr>
+			<td>vsearch</td>
+			<td>chimera filtering<br>clustering</td>
+			<td>2.11.0</td>
+			<td><a href="https://github.com/torognes/vsearch" target="_blank">github.com/torognes/vsearch</a></td>
+		</tr>
+		<tr>
+			<td>BLAST+</td>
+			<td>compiling databases<br>identifiying reads<br>fetching reads from databases</td>
+			<td>2.8.1+</td>
+			<td><a href="ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/" target="_blank">ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/</a></td>
+		</tr>
+	</table>
+</div>
+<h2>Analysing and validating raw reads</h2>
+<img src="assets/pipeline_kmers.png" class="right">
+First suggested step is to check barcode and/or primer occurances and quality distribution for the sequences. Selecting "Analyse FASTQ files", users can select folder or multiple FASTQ files to run check against the reads. It is best to select forward and reverse reads separately to distinguish primers. Also forward and reverse primers can have different length. Users need to define kmer length, which can be the length of the barcode, primer or combination of them depending on the dataset. For each file or summary output is written into TXT file with most abundant kmers on the top and sequences quality distribution. In the results users can check against correct primers how well the primers are working in the dataset. If there are many errors, users can specify allowing mismatches in the primer when cleaning the sequences to allow fetching more sequences into downstream analyse.
+<table>
+	<tr>
+		<th>Select folder with FASTQ files<br>Select multiple FASTQ files</th>
+		<td>Specify folder, where FASTQ files are located or select them separately by holding down SHIFT or CTRL key.</td>
+	</tr>
+	<tr>
+		<th>Calculate quality</th>
+		<td>Quality calculation can be slow for large files and users can specify if they want to speed up the process, when checking different lengths of kmers.</td>
+	</tr>
+	<tr>
+		<th>Check every 10th sequence</th>
+		<td>Users can specify if they want to check only 1/10 of the sequences to speed up the process. Results are multiplied by 10 to estimate the numbers as if the full file was used.</td>
+	</tr>
+	<tr>
+		<th>Separate statistics for each file</th>
+		<td>Results are written for all the files into single file, but users can specify to write also results for each file.</td>
+	</tr>
+	<tr>
+		<th>Check kmers at the front</th>
+		<td>Checking kmers only at the front of sequence is suitable if checking barcode and/or primer occurances in the dataset. Disabling this option and searching short (e.g. 8 bases) kmers within the sequences can show occurance of homopolymer errors.</td>
+	</tr>
+	<tr>
+		<th>Define kmers position</th>
+		<td>Define starting position to search kmer values. This allows to ignore barcodes or primers at the front of the sequence.</td>
+	</tr>
+	<tr>
+		<th>Define kmers length</th>
+		<td>Define the string length to summarize kmers occurances.</td>
+	</tr>
+	<tr>
+		<th>Specify number of kmers to show</th>
+		<td>To reduce file sizes and noise, only top kmer occurances can be displayed. Change to 0 to show all of them.</td>
+	</tr>
+</table> 
+<h2>1. Cleaning reads</h2>
+<img src="assets/pipeline_cleaning.png" class="right">
+The pipeline supports Sanger, 454, IonTorrent, Illumina single and paired-end reads and PacBio reads. It does not support binary file formats, so, if necessary, input files should be converted to FASTA, FASTA+QUAL or FASTQ formats using third party tools provided by the sequencing companies. Most predefined parameters are optimal for SSU fungal analyses using the Maarj<i>AM</i> database. <!--Predefined parameters helps to unify analyses across different studies.-->
+<br><br>
+Users need to select the appropriate cleaning options for their data. Illumina sequences are mostly provided as demultiplexed files, so users needs to define the location of the files. The pipeline also supports reading packed *.gz files containing FASTA/QUAL and FASTQ files. If the files are packed with *.zip or *.rar files, users need to unpack the files prior to cleaning the reads.
+<br><br>
+To begin the cleaning step, select option "1. Clean and quality filter reads" from main menu. The different cleaning parameters are summarised below. The interface populates some cells with values already defined for optimal use mostly focusing on Illumina sequencing using SSU amplicon. These fields can be changed by the user. For parameters to be included when running the command it is necessary to activate the checkboxes at the end of the parameter fields. 
+<table>
+	<tr>
+		<th>Select folder with FASTQ files</th>
+		<td>When using demultiplexed data, users need to define location of the FASTQ files by selecting the correct folder. Files can optionally be packed as *.gz extension. The pipeline tries to identify R1 and R2 pairs, but can be used with only forward or reverse reads.</td>
+	</tr>
+	<tr>
+		<th>Select FASTA or FASTQ file</th>
+		<td>Users need to define demultiplexed or raw file locations on their filesystem. The pipeline supports reading *.gz packed files; other packed file types need to be unpacked before continuing.</td>
+	</tr>
+	<tr>
+		<th>Select QUAL file</th>
+		<td>For 454 and IonTorrent, files are provided as FASTA + QUAL pairs. These can be converted to FASTQ, but this is not necessary. FASTA + QUAL files stores sequence data and qualities for each base in separate files; in FASTQ files sequence data and base quality information are incorporated into a single file.</td>
+	</tr>
+	<tr>
+		<th>Select forward reads file R1<br>Select forward oligos file R2<br>Select reverse oligos file R3<br>Select reverse reads file R2 or R4</th>
+		<td>If sequences are not demultiplexed, users need to define the R1 forward reads and R2/R4 (depending if oligo files are provided) reverse reads FASTQ files. If oligo files are not provided (R2 and R3), these files (R1 and R2) should contain the barcode inline with the sequence. Barcodes located in the FASTQ header are not supported. If oligo files R2 and R3 are provided, they contain barcode sequences, which are used to demulitplex R1 forward reads and R4 reverse reads into different samples.</td>
+	</tr>
+	<tr>
+		<th>Select sample sheet</th>
+		<td>If reads are not demultiplexed, the user needs to define a sample sheet file, which contains the sample name and barcode sequence(s) used (forward and/or reverse, depending on which files are used). It can also contain primer sequences, but these can be overwritten using the primer parameter. The sample sheet file needs to be a tab delimited text file. If information is in a spreadsheet file, the data can be copied and pasted into a text file (which will automatically generate tabs for each column).</td>
+	</tr>
+	<tr>
+		<th>Define sample column<br>Define forward barcode column<br>Define reverse barcode column<br>Define forward primer column<br>Define reverse primer column</th>
+		<td>Define the columns used to store sample, forward barcode, reverse barcode, forward primer and reverse primer infomration inside the sample sheet. Columns are identified by number, assuming sequential numbering from 1 for the left-hand column. For PacBio, define only forward reads FASTQ file and additionally define the reverse barcode and primer columns to check barcode and primer at the end of the sequence.</td>
+	</tr>
+	<tr>
+		<th>Forward primer<br>Reverse primer</th>
+		<td>Users can directly enter the forward and reverse primer sequences. In this case primers included in the sample sheet are ignored.</td>
+	</tr>
+	<tr>
+		<th>Average quality</th>
+		<td>Filters sequences based on minimum average quality after removing barcodes and primers and trimming sequence length (if selected). Quality typically ranges between 0-41, but can go up to 100 for PacBio.</td>
+	</tr>
+	<tr>
+		<th>Minimum allowed quality for a base</th>
+		<td>Defines minimum allowed quality for any indivudal base; lower values will result in a read being discarded. The filtering is applied after sequences have been trimmed.</td>
+	</tr>
+	<tr>
+		<th>Minimum quality for a base before trimming the end</th>
+		<td>Defines the minimum quality allowed for single bases at the 3' end; bases falling below the threshold will be trimmed away.</td>
+	</tr>
+	<tr>
+		<th>Average trimming window quality<br>Trimming window length</th>
+		<td>Defines average trimming window quality for a defined window length. If the quality of the frame drops below the defined parameter, the beginning of the frame is trimmed from the sequence to remove low quality region.</td>
+	</tr>
+	<tr>
+		<th>Minimum allowed read length</th>
+		<td>Defines minimum allowed read length after all trimming; reads shorter than this length are discarded. Trimming includes removal of barcode and primer sequences and trimming by length and quality parameters.</td>
+	</tr>
+	<tr>
+		<th>Maximum trimming length<br>Trim forward sequence<br>Trim reverse sequence</th>
+		<td>Define maximum sequence length before the ends are trimmed. This option may be useful for trimming reverse primers and barcodes when amplicon length is known and of relatively fixed size. It is also possible to trim forward and reverse sequences to different lengths, for example where reverse reads are expected to have lower quality than forward reads. In general trimming of paired reads may be done more agressively if the overlap section is long.</td>
+	</tr>
+	<tr>
+		<th>Remove sequences with hompolymers</th>
+		<td>454 and IonTorrent sequencing are prone to hompolymer errors. This parameter specifies the maximum acceptable hompolymer length; if it contains a longer homopolymer sequence, it is truncated to user specified value.</td>
+	</tr>
+	<tr>
+		<th>Overhang adapter sequence</th>
+		<td>Overhang adapter sequences may be present when insert size is smaller than read length. To remove these, users should type part of the beginning of the overhang adapter sequence to trim sequences into correct length (checking is done with 100% identity and depending on sequencing errors, full adapter can be missed or if the adapter is located at the end of the sequence and is only partially visible). By default, this field is filled with Illumina overhang adapter, but is not activated. User can specify multiple adapters using commas to separate.</td>
+	</tr>
+	<tr>
+		<th>Allow mismatches in barcode and primer</th>
+		<td>Allow 1 nucleotide mismatch in the barcode and primer sequence (allowing more reads to be retained for the following steps).</td>
+	</tr>
+</table>
+<h3>Demultiplexed FASTA/FASTQ (454/Illumina/PacBio reads)</h3>
+<img src="assets/pipeline_cleaning1.png" class="full">
+If sequencing files are already demultiplexed, users should use this option. The pipeline support FASTQ and FASTQ.GZ file search within subfolders. Users need to define the primers used in the study. For the SSU region, most options are already optimal. For the ITS2 subregion, it may be preferable to check the forward and reverse read trimming options, using the default parameters provided by the pipeline. The pipeline supports degenerate primers (primer sequences can include ambiguous nucleotides, specified using IUAPC codes), which may be applicable for analysis of the ITS region. When using paired-end reads, the pipeline produces a single FASTQ file with interleaved data, where forward and reverse reads are displayed in pairs. This file can be used in the next step to combine reads. If for some reason the reverse reads are low quality and the combination rate is low, it may be preferable to use forward reads for the SSU as the forward 300bp sequence fragments cover the variable part of the amplicon.
+<h3>Single/Paired-end FASTQ (Illumina/PacBio reads)</h3>
+<img src="assets/pipeline_cleaning2.png" class="full">
+If sequencing files are provided as FASTQ and are not demulitplexed this option should be used. For PacBio, only the forward reads and sample sheet are used. Reverse barcode and reverse primer can be defined to allow them to be checked in the forward read (if reverse read file is not defined). The sequences are automatically reverse complemented and barcode and primer occurances at the end of the sequence is checked. Primer information can be provided using the sample sheet file. When using paired-end reads, the pipeline produces a single FASTQ file with interleaved data, where forward and reverse reads are displayed in pairs. This file can be used in the next step to combine reads. If for some reason the reverse reads are low quality and the combination rate is low, it may be preferable to use forward reads for the SSU, as the forward 300bp sequence fragments cover the variable part of the amplicon.
+<br><br>
+The sample sheet is a file, where sample, barcode and primer information is provided in columns separated by tabular spaces (tabs). Therer is a button to open and review the sample sheet file. Here is an example of sample sheet file following default order of columns. Lines marked with dash (#) are ignored. Users can define different barcodes having same sample name, in this case reads carriying the different barcodes will be identified as coming from the same samples in the demultiplexed file. Barcodes and primers can have varying lengths.
+<br>
+<code class="short">#sample	forward barcode	forward primer (NS31)	reverse barcode	reverse primer (AML2)
+JS1	ACGTACGT	TTGGAGGGCAAGTCTGGTGCC	ACGTACGA	GAACCCAAACACTTTGGTTTCC
+JS2	ACGTAGCA	TTGGAGGGCAAGTCTGGTGCC	ACGTACGT	GAACCCAAACACTTTGGTTTCC	
+</code>
+<h3>FASTA+QUAL/FASTQ (454/IonTorrent) reads</h3>
+<img src="assets/pipeline_cleaning3.png" class="full">
+For single forward read files this option should be used. This option only supports filtering reads based on forward barcode and forward primer sequences and may be useful for analysis of data from deprecated sequencing platforms. If reverse barcodes and primers are needed, use the "Single/Paired-end FASTQ (Illumina/PacBio) reads" options. 
+<h2>2. Combine reads</h2>
+<img src="assets/pipeline_combine.png" class="right">
+When using paired-end reads, pipeline uses FLASh software to combine forward and reverse reads. Cleaning step produces interleaved FASTQ file, where odd reads are forward reads and even reads are reverse reads. Sequences are combined at the end and reverse reads are automatically converted to reverse complement. To have good combination rate, sequences should have enough overlap and sequence ends trimmed based on the quality to remove low quality regions. 
+<table>
+	<tr>
+		<th>FASTQ files</th>
+		<td>For input, use interleaved FASTQ files. Pipeline also supports combination of files that have forward and reverse reads separated into two files.</td>
+	</tr>
+	<tr>
+		<th>File type</th>
+		<td>Specify how the sequences are presented in the input file; this pipeline produces interleaved sequences, but there is possibility to use reads that are separated into two files.</td>
+	</tr>
+	<tr>
+		<th>Minimum overlap</th>
+		<td>Specify minimum overlap to combine two sequences, default value is 10 bases.</td>
+	</tr>
+	<tr>
+		<th>Maximum overlap</th>
+		<td>Specify maximum overlap to combine two sequences, default value is maximum size of the Illumina MiSeq sequences.</td>
+	</tr>
+	<tr>
+		<th>Overlap identity</th>
+		<td>Specify overlap identity to include the sequences and combine them into single sequence.</td>
+	</tr>
+	<tr>
+		<th>Allow outies in the alignment</th>
+		<td>Specify if outies are allowed in the alignment. Outies occur when both reads have overlap at the front not at the end. This occurs when sequencing insertion size is smaller than read length and reads are not trimmed to correct length.</td>
+	</tr>
+	<tr>
+		<th>Output FASTA</th>
+		<td>Specify output of the sequences. FLASh produces FASTQ files, but subsequent steps only work with FASTA files, therefore users need to convert the files to FASTA.</td>
+	</tr>
+</table>
+<h2>Cluster reads (optional)</h2>
+<img src="assets/pipeline_cluster.png" class="right">
+This pipeline is designed for use on home computers with low hardware specifications (commodity hardware). When running large scale analyses, one way to further decrease computational complexity is by clustering sequences prior to sequence identification. To be safe side, it is best to use a higher identity (e.g. cluster at 98% or 99%) than that used during the BLAST+ identification (e.g. 97%). Sequences needs to be on the same strand and start from the same amplicon position in order to successfully cluster. Chimera checking can be done prior clustering, but in purpose of speeding up the process, pipeline also supports chimera checking after the clustering. For input, a FASTA file should be used (convert FASTQ to FASTA if needed). The output file name is automatically generated based on the input name and clustering identity with following extensions: *.cluster98.uc (containing vsearch cluster centroids and cluster elements), *.cluster98.fasta (containing cluster centroid sequences in FASTA sequence format), *.cluster97.clusters (containing each cluster and its element in separate row similar to legacy BLASTclust). The clusters centroid file can be used in the following step to map results back to individual sequences. When generating a pivot table, defining the cluster file (*.uc) allows all sequences in clusters to be included in the counts in pivot table cells.
+<table>
+	<tr>
+		<th>FASTA file</th>
+		<td>For input, use the cleaned FASTA file from previous step. If you have only FASTQ file, you can use additional tools to convert FASTQ to FASTA.</td>
+	</tr>
+	<tr>
+		<th>Identity</th>
+		<td>Similarity percentage used to cluster reads.</td>
+	</tr>
+	<tr>
+		<th>Number of threads</th>
+		<td>To speed up the process, programs can use multiple cores and threads. The number of threads specified should bot exceed the number of available threads. The pipeline will check the number of threads available, leaving one thread free for other programs and for the operating system.</td>
+	</tr>
+	<tr>
+		<th>Cluster mode</th>
+		<td>vsearch provides different modes to sort sequences before constructing centroids and clusters. cluster_fast uses sequence length in decreasing order. cluster_size uses sequence abundance in decreasing order.</td>
+	</tr>
+</table>
+<h2>3. Remove chimeric reads</h2>
+<img src="assets/pipeline_chimeras.png" class="right">
+Sequence data amplified using PCR can include chimeric sequences, i.e. an artefactual sequences constructed from two or more different organisms. Chimera checking can be used with database or <i>de novo</i> methods. With the <i>de novo</i> method, input sequences are clustered with 97% and clustered sequences are used as a reference database with which to calculate the probability that any given input sequences represents single organisms or is combined from different organisms. With both the <i>de novo</i> or reference database method, this is done by dividing sequences into smaller fragments and checking each fragment against the closest candidate from the database or among the clustered centroids. When using the reference database mode, one makes the assumption that the database itself is a chimera free. It may be most comprehensive to use both methods by running the program twice. 
+<table>
+	<tr>
+		<th>FASTA file</th>
+		<td>Provide an input FASTA file. If clustering was used in the previous step, define clustered file.</td>
+	</tr>
+	<tr>
+		<th>UC clustered file</th>
+		<td>Optional parameter. Use only when a clustered file was used This will map chimera counts back to individual sequences.</td>
+	</tr>
+	<tr>
+		<th>Chimera checking mode</th>
+		<td>Define how chimeras are checked. <i>de novo</i> uses input sequences to cluster them with 97% to centroids and centroid sequences act as reference database. The second option is to use a reference database, but this reference database should be chimera free.</td>
+	</tr>
+	<tr>
+		<th>Database file</th>
+		<td>If the database option is used, select the database in FASTA format. If you place a FASTA file in the db/ folder inside the pipeline, these will be automatically shown here. Use the OPEN option to select a file from a different location.</td>
+	</tr>
+</table>
+<h2>4. Identify reads with BLAST+</h2>
+<img src="assets/pipeline_blast.png" class="right">
+Once a cleaned, chimera-free set of sequences is generated, the next step is to assign taxonomy using a BLAST+ search against an appropriate reference database (e.g. Maarj<i>AM</i>, GB/NCBI). A small e-value speeds up the search and only find the best hits with longest alignments; however, when using short sequences, a higher e-value may be necessary reflecting the shorter alignment fragments. The GB/NCBI database is divided into smaller partitions named as nt.00, nt.01, etc. This helps to overcome some filesystem storage issues and also helps to reduce memory usage while running BLAST+. When using GB/NCBI BLAST+, user has option to run the BLAST+ sequentially againts separate partitions of GB/NCBI. To split the command into smaller batches, check "automatically run multiple partitions". If a particular job fails or is terminated by user, it can be rerun by selecting the database partition that was halted (e.g. nt.05) and it will automatically run BLAST+ where it left off. Once a partitioned BLAST+ search is complete, "Merge NCBI BLAST+ results" can be used to combine multiple BLAST+ outputs into single output. GB/NCBI BLAST+ should use more than 1 best hit to have more trustworthy result and allow to use common taxonomy functionality in the pivot table section.
+<table>
+	<tr>
+		<th>FASTA file</th>
+		<td>Define cleaned, chimera-free FASTA. Users can also use a clustered FASTA file to speed up the process.</td>
+	</tr>
+	<tr>
+		<th>Database file (*.nhr)</th>
+		<td>BLAST+ uses BLAST+ formated databases to speed up identification of the reads. Database files located in the db/ folder will be displayed here, but users have the option of opening a file from a different location using OPEN. To convert a FASTA file to a BLAST+ database, use the "Build a BLAST+ database" option in the home window.</td>
+	</tr>
+	<tr>
+		<th>E-value</th>
+		<td>BLAST+ parameter (expect value) showing the number of hits one would "expect" to see by chance when searching a database of a particular size. It decreases exponentially as the Score (S) of the match increases.</td>
+	</tr>
+	<tr>
+		<th>Best hits</th>
+		<td>Number of best hits to display. Use 10 or more for NCBI GB BLAST+. For custom curated databases (e.g. Maarj<i>AM</i>) it is sufficient to return the best hit.</td>
+	</tr>
+</table>
+
+<h2>5. Generate pivot table from BLAST+</h2>
+<img src="assets/pipeline_pivot.png" class="full">
+Once the BLAST+ search is cimplete, a sample vs taxon pivot table can be generated using particular filtering parameters. The pipeline procides identity- and alignment-based filtering. In order to achieve a good hit, a query sequence should match a database subject sequence with sufficiently complete alignment and high identity. In some cases it may be advisable to use a lower alignment threshold to retrieve a larger hit pool; for instance, if the quality of 454 sequences declines at the end of reads; or when using different primers compared to most of the reference set. However, it may also be advisable to clean the sequences again using the trimming parameter to cut sequences shorter. There is also the option to filter hits when they are located in a particular position within the amplicon. This relies on the reference database being trimmed to start from same position compared to the amplicon, so that both query and reference sequences start from the same position. The Maarj<i>AM</i> database sequences included with the pipeline are trimmed between NS31 and AML2 primers. The most variable section within this region is located between 70 to 300bp after the NS31 primer. Using this information to specify the alignment variable region parameter is helpful when usigng tagmentation based Illumina, where input sequences are located randomly within amplicon. 
+<br><br>
+Running this script results three files: two pivot tables (one of them is transposed) and one FASTA file containing sequences with no or uncertain identity from the BLAST, referred to as nohits. If clustering is used, an additional nohit FASTA file with clustered centroids is generated. To generate the nohits file, the user needs to define the input FASTA file; otherwise only pivot tables are generated.
+<table>
+	<tr>
+		<th>FASTA file</th>
+		<td>Define the input, non-clustered FASTA file. This is used to count cleaned sequences per sample and totals. If a file containing cluster results is used, incorrect results will be produced.</td>
+	</tr>
+	<tr>
+		<th>BLAST+ result file</th>
+		<td>Define the BLAST+ output file generated in the previous step, which is used to identify hits.</td>
+	</tr>
+	<tr>
+		<th>Clustered UC file</th>
+		<td>Define the clustered output file to map BLAST+ hits back to individual sequences. This calculation uses the numbers of elements in clusters to calculate correct cell counts in the pivot table.</td>
+	</tr>
+	<tr>
+		<th>Lookup taxa file</th>
+		<td>Users can define a custom lookup to reassign hit identities when producing the pivot tables. A tabulated file format should be used, where the first column contains the BLAST+ hit description and the second column contains the conversion information. This is mainly used with GB/NCBI BLAST+ to convert accession ID codes into a taxonomy tree. For GB/NCBI BLAST+, use the "Fetch taxonomy from GB/NCBI BLAST+" option to generate this file.</td>
+	</tr>
+	<tr>
+		<th>Identity</th>
+		<td>Define the threshold identity percentage for a BLAST+ hit to be retained. For Maarj<i>AM</i> and UNITE databases a value of 97% is suggested. For GB/NCBI BLAST+ use 95% when using multiple best hits or 90% when using single best hits, are suggested.</td>
+	</tr>
+	<tr>
+		<th>Alignment</th>
+		<td>Define alignment length percentage threshold for a BLAST+ hit to be retained. This allows short alignment hits to be removed. For Maarj<i>AM</i> and UNITE databases 95% is suggested; for GB/NCBI BLAST+ 90% is suggested.</td>
+	</tr>
+	<tr>
+		<th>Variable region start<br>Variable region end</th>
+		<td>When using tagmentation-based Illumina sequences these parameters allow users to define a variable amplicon region. The BLAST+ alignment needs to cover this region to record a hits. </td>
+	</tr>
+	<tr>
+		<th>BLAST+ mode</th>
+		<td>Define which database was used. For the Maarj<i>AM</i> database, only the last part of the hit description is used to retrieve virtual taxon groups (VT). When full description is specified, the BLAST+ output description is returned without modification. The GB/NCBI database option uses GenBank accession code, which can be used to convert hits to taxa within the taxonomic tree. The UNITE option uses the species hypothesis description (SH).</td>
+	</tr>
+	<tr>
+		<th>Write out zeros</th>
+		<td>Specify whether 0 values are written out or left blank.</td>
+	</tr>
+	<tr>
+		<th>Write out nohit file</th>
+		<td>Specify whether to return a nohit file. This may be useful for analyses using custom databases. The nohit file can be checked against the GB/NCBI database to retrieve additional information about the reads.</td>
+	</tr>
+	<tr>
+		<th>Options for multiple best hits</th>
+		<td>When using multiple best hits, one of these options should be specified. The first option collects all the hits for one query that fullfil the required thresholds set in the Options part and divide the hits equally in the pivot table, such that all the hits for a single query together constitute 1. For example if you have 10 best hits and 7 of them are against VTX93 and 3 of them against VTX94, 0.7 is added to VTX93 and 0.3 is added to VTX94. When using the GB/NCBI BLAST+ option, congruence among hits is checked at decreasing taxonomic ranks at least 51% of hits return the same scientific name, that name is selected; and will be continued towards lower ranks. If the root rank still displays multiple hits, "Multiple hits detected" is recorderd and included in the pivot table.</td>
+	</tr>
+</table>
+<h2>Pivot table results</h2>
+<img src="assets/ui_gbresults.png" class="full">
+The esults are written into a *.tsv file, which is a tab separated file format that can be opened with any spreadsheet software. If for any reason the data are not divided correctly into columns, this may be achived using the "Data to columns" function in spreadsheet software. The output includes two sets of results files: one where samples are in rows and hits are in columns; and a  transposed version. For GB/NCBI BLAST+ results it is possible to convert hit descriptions into ranks on the taxonomy. Users first need to use "Fetch taxonomy from GB/NCBI BLAST+".
+<h2>Pivot table from cluster (optional)</h2>
+<img src="assets/pipeline_pivotcluster.png" class="right">
+The pipeline also provides a way to generate OTU output pivot tables similar to those generated by QIIME v1. Users need to define a cluster file and the BLAST+ output. It is also possible to define a lookup file to add taxonomy information to each cluster. 
+<table>
+	<tr>
+		<th>Clustered UC file</th>
+		<td>Define the clustered output file, which is used to calculate cluster counts.</td>
+	</tr>
+	<tr>
+		<th>BLAST+ output</th>
+		<td>Define the BLAST+ identification results file, which is used to map clusters to BLAST+ results.</td>
+	</tr>
+	<tr>
+		<th>FASTA file (optional)</th>
+		<td>Define the clustered FASTA file to generate nohits files and add centroid sequences for each cluster to the pivot table. To return centroid sequences user also need to tick the "write out centroids" option at the bottom.</td>
+	</tr>
+	<tr>
+		<th>Lookup TAXA file</th>
+		<td>BLAST+ hits can be assigned to taxa based on this TAXA file. This may be useful when using GB/NCBI BLAST+ results to map GenBank accession ID codes to taxonomic information.</td>
+	</tr>
+	<tr>
+		<th>Sort</th>
+		<td>Sort clusters by size in decending order, so the first cluster in the pivot table is the largest. Otherwise, clusters are presented in the order provided by the clustering program.</td>
+	</tr>
+	<tr>
+		<th>Alignment identity<br>Alignment length</th>
+		<td>Define BLAST+ parameters to be used when filtering hits. The pivot table will display counts of good hits for each cluster.</td>
+	</tr>
+</table>
+
+<div class="well">
+	<h2>GB/NCBI BLAST+</h2>
+	<img src="assets/pipeline_blast.png" class="right">
+	For GB/NCBI BLAST+ users need to download the non-redundant nucleotide database from the NCBI FTP server and add it to the gb/ folder or  download it by hand using following link: <a href="ftp://ftp.ncbi.nlm.nih.gov/blast/db/">ftp://ftp.ncbi.nlm.nih.gov/blast/db/nt.%s.tar.gz</a> (download nt.00.tar.gz-nt.81.tar.gz files). Users need to unpack the files to the gb/ folder in order to run the BLAST+. An automatic download script is provided in the folder. The pipeline has the option to run partitioned databases. It is suggested to cluster nohits to reduce BLAST+ execution time and speed up the process. NCBI provides taxonomy as numerical identifiers. To correctly convert these in the taxonomy tree in the final pivot table, users need to download taxonomy files from the NCBI FTP server and unpack them into the taxonomy/ folder. An automatic download script is provided in the folder.
+	<h2>Merge BLAST</h2>
+	<img src="assets/pipeline_mergeblasts.png" class="right">
+	After using GB/NCBI BLAST+, the merge BLAST+ functionality can be used to combine different partioned database BLAST+ outputs into a single BLAST+ file. It uses the BLAST score to pick the best hits from multiple files for each query sequence. There is also option to use only single best hit for each query. Multiple best hits can be used to build a taxonomy tree based on the consensus >5=% of hits at a given taxonomic rank. There is also the option to define a folder containing the BLAST+ output fules. 
+	<table>
+		<tr>
+			<th>Select folder</th>
+			<td>Define the folder, where BLAST+ outputs are located. Will only merge partitioned BLAST+ results and ignore single BLAST+ results. </td>
+		</tr>
+		<tr>
+			<th>Select files</th>
+			<td>Select files by hand using CTRL and mouse click to select individually or SHIFT and mouse click to select files as a range.</td>
+		</tr>
+		<tr>
+			<th>Best hit</th>
+			<td>Only use the best hit for each query. BLAST+ results will be ordered by blast score and highest score hit for each query is selected.</td>
+		</tr>
+	</table>
+	<h2>Generate a lookup file for GB/NCBI taxonomy</h2>
+	<img src="assets/pipeline_fetchtaxa.png" class="right">
+	Use "Fetch taxonomy from GB/NCBI BLAST+" to generate the taxonomy required to produce an NCBI pivot table with full taxonomy names. If taxonomy files are present in the taxonomy/ folder, the pipeline will autofill the fields. As the lookup file is multiple GB in size, it can take some time to find the correct taxonomy identifiers, but generally the process lasts less than 15 minutes.
+	<table>
+		<tr>
+			<th>BLAST+ output file</th>
+			<td>Select the combined GB/NCBI BLAST+ output file generated in the previous step.</td>
+		</tr>
+		<tr>
+			<th>nodes.dmp file</th>
+			<td>Contains information about how taxonomic units are connected. The nodes.dmp.gz file is supported to save space. These files can be downloaded and packed into the pipeline taxonomy/ folder from following link: <a href="ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.dmp.gz">ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz</a> (contains nodes.dmp and names.dmp files) and <a href="ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/gi_taxid_nucl.dmp.gz">ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/gi_taxid_nucl.tar.gz</a> (contains gi_taxid_nucl.dmp file). These two files can also be downloaded using scripts located in the taxonomy/ folder.</td>
+		</tr>
+		<tr>
+			<th>names.dmp file</th>
+			<td>Contains scientific species name information for each node. The names.dmp.gz file is supported to save space.</td>
+		</tr>
+		<tr>
+			<th>gi_taxid_nucl.dmp file</th>
+			<td>Contains lookup information for reference sequence accession code to taxonomic code conversion. The gi_taxid_nucl.dmp.gz file is supported to save space.</td>
+		</tr>
+		<tr>
+			<th>Simplified output</th>
+			<td>The taxonomic tree is built based on the following ranks: kingdom, phylum, class, order, family, genus, species. Subranks, which might not be described for many taxa, are removed, helping to group hits together.</td>
+		</tr>
+		<tr>
+			<th>Display ranks</th>
+			<td>The rank is dispalyed in parantheses along with each scientific name.</td>
+		</tr>
+	</table>
+	<h2>Generate Pivot table from GB/NCBI BLAST+</h2>
+	<img src="assets/pipeline_pivot.png" class="full">
+	For a GB/NCBI BLAST+ pivot table, you need to define the *.taxa file, use the GB/NCBI database option and use the "Construct common taxonomy tree" option. It is advisable to lower the identity threshold to 95% and the alignment threshold to 90%.
+	<h2>6. Fetch sequences from GB/NCBI BLAST+ based on taxonomy</h2>
+	<img src="assets/pipeline_pickglomero.png" class="right">
+	Users need to define the FASTA file that was used for the BLAST+, the BLAST+ output and a lookup file. Users can specify one or multiple organism names separated by commas that will be selected to FASTA file. Scanning the *.TAXA filem ay allow users to identify appropriate ranks and names to search.
+	<table>
+		<tr>
+			<th>FASTA file</th>
+			<td>The non-clustered FASTA file. This will be used to fetch sequences based on the BLAST+ results.</td>
+		</tr>
+		<tr>
+			<th>BLAST+ output file</th>
+			<td>Use the GB/NCBI BLAST+ merged file to gather hit information.</td>
+		</tr>
+		<tr>
+			<th>Clustered UC file</th>
+			<td>If clustering was used, users should define a UC file to map BLAST+ hits back to individual sequences. If using a nohits FASTA file, it is still possible to use the clustered file after the cleaning step.</td>
+		</tr>
+		<tr>
+			<th>TAXA file</th>
+			<td>Define the taxonomic conversion file in order to find hits based on the taxonomic tree. Otherwise the BLAST+ full description is used for the search field.</td>
+		</tr>
+		<tr>
+			<th>Search term</th>
+			<td>Define the search term, defaulted to "Glomeromycetes". Search terms can be separated by commas to find multiple organisms.</td>
+		</tr>
+		<tr>
+			<th>Identity (%)</th>
+			<td>Define the BLAST+ identity percentage to pick hits.</td>
+		</tr>
+		<tr>
+			<th>Alignment (%)</th>
+			<td>Define the BLAST+ alignment percentage to pick hits.</td>
+		</tr>
+		<tr>
+			<th>Maximum number of occurances</th>
+			<td>Users can limit selection of hits to a certain number. 0 means that there is no limit.</td>
+		</tr>
+		<tr>
+			<th>BLAST+ description</th>
+			<td>Writes out the BLAST+ description for each picked sequence.</td>
+		</tr>
+	</table>
+	<h2>7. Pick sequences from clusters</h2>
+	<img src="assets/pipeline_cluster.png" class="right">
+	<img src="assets/pipeline_pickcluster.png" class="right">
+	To use nohit sequences in further phylogenetic analysis or for identification of putatively novel taxa, it may be useful to select a representative sample of the sequence diversity. For example, when searching for new taxa among the Glomeromycotina nohits, this script allows the nohit sequences to be clustered  (at e.g. 97%) and a number of sequences (e.g. 4) to be returned for each cluster. Deeper analysis of nohits allows for an iterative (open reference) process of sequence identification. Thus new taxa may be added to the reference database (which should be converted to a BLAST+ database) and sequence identification can be rerun against this updated database.
+	<table>
+		<tr>
+			<th>FASTA file</th>
+			<td>The non-clustered FASTA file that was used for the clustering step.</td>
+		</tr>
+		<tr>
+			<th>Clustered UC file</th>
+			<td>Define the UC file to map sequences in clusters back to individual sequences.</td>
+		</tr>
+		<tr>
+			<th>BLAST+ output file</th>
+			<td>The BLAST+ results file can be defined if needed to show for each selected sequence corresponding BLAST+ hit.</td>
+		</tr>
+		<tr>
+			<th>Identity (%)</th>
+			<td>Show only BLAST+ hits when the identity percentage threshold is met.</td>
+		</tr>
+		<tr>
+			<th>Number of sequences to pick</th>
+			<td>Specify the number of sequences to pick from each cluster.</td>
+		</tr>
+		<tr>
+			<th>Minimum cluster size</th>
+			<td>Remove small clusters by specifying a minimum cluster size (sequences per cluster) for inclusion.</td>
+		</tr>
+		<tr>
+			<th>Minimum sequence length</th>
+			<td>Only pick sequences that exceed minimum sequence length threshold.</td>
+		</tr>
+		<tr>
+			<th>Pick centroid</th>
+			<td>Always pick the cluster centroid.</td>
+		</tr>
+		<tr>
+			<th>Group clusters</th>
+			<td>Groups sequences from the same cluster for easier data editing.</td>
+		</tr>
+		<tr>
+			<th>Sort clusters</th>
+			<td>Sort output by cluster size in descending order.</td>
+		</tr>
+		<tr>
+			<th>Pick sequences</th>
+			<td>Select a method for picking sequences from clusters. Sequentially picks sequences in the order in they were added to clusters; divided equally uses a constant step to pick sequences from highest to lowest identity within the cluster and randomly selects sequences from clusters at random step.</td>
+		</tr>
+	</table>
+	<div style="clear: both;"></div>
+</div>
+<h2>8. Pick representative sequences</h2>
+<img src="assets/pipeline_pickrep.png" class="full">
+Once sequences are analysed, it may be necessary (e.g. for sequence archiving) to pick representative sequences based on BLAST+ hits. This script allows users to select a number of sequences per taxon or per taxon per sample. FASTA and TSV files can be generated; the latter being easy to manage in spreadsheet software and suitable for submission to sequence archiving platforms.
+<table>
+	<tr>
+		<th>FASTA file</th>
+		<td>Select the non-clustered FASTA file used for the clustering. This is used to fetch sequences based on the BLAST+ results.</td>
+	</tr>
+	<tr>
+		<th>BLAST+ output file</th>
+		<td>The BLAST+ output and database used to summarize the hits.</td>
+	</tr>
+	<tr>
+		<th>Clustered UC file</th>
+		<td>If clustering was used, define the UC file to map BLAST+ hits back to individual sequences.</td>
+	</tr>
+	<tr>
+		<th>Identity (%)</th>
+		<td>Define the BLAST+ identity percentage to pick hits.</td>
+	</tr>
+	<tr>
+		<th>Alignment (%)</th>
+		<td>Define the BLAST+ alignment percentage to pick hits.</td>
+	</tr>
+	<tr>
+		<th>Number of sequences to pick</th>
+		<td>Specify the number of sequences to pick for each.</td>
+	</tr>
+	<tr>
+		<th>Group hits together</th>
+		<td>Group BLAST+ hit values together based on BLAST+ description for easier data manipulation.</td>
+	</tr>
+	<tr>
+		<th>Sort hits by abundance</th>
+		<td>Displays representative sequences for abundant taxa first.</td>
+	</tr>
+	<tr>
+		<th>Pick option</th>
+		<td>The default is to pick sequences grouped by taxa; checking this option allows sequences to be picked on a per sample and per taxon basis.</td>
+	</tr>
+	<tr>
+		<th>Output option</th>
+		<td>Output picked sequences in FASTA format; the default produces a tabulated file, which can be opened in spreadsheet programs to easily manage, sort and group entries.</td>
+	</tr>
+	<tr>
+		<th>Define BLAST+ mode</th>
+		<td>Define which BLAST+ database was used. Hits will be grouped accordingly: the Maarj<i>AM</i> database will group by VT (virtual taxa), UNITE by SH (species hypothesis) and other databases will use the full hit description.</td>
+	</tr>
+	<tr>
+		<th>Pick sequence order</th>
+		<td>Define how sequences from hits are selected. Hits are ordered by BLAST+ score, with higher identity and longer alignment hits placed first. Sequentially selects the hits with the highest scores; divided equally uses a constant step to cover all hits within the group and randomly selects hits randomly.</td>
+	</tr>
+</table>
+<div class="well">
+	<h1>Additional tools</h1>
+	<h2>Convert NCBI BLAST+ to common taxonomy</h2>
+	<img src="assets/pipeline_commontaxa.png" class="right">
+	Users can convert BLAST+ results to include common taxonomy hits by generating new BLAST+ output, which can be used with other tools in the pipeline. To reduce code usage and simplify the pipeline graphical interface, common taxonomy generation is only provided by this tool and also under "Generate pivot table from BLAST+".
+	<h2>Convert FASTA to FASTQ or FASTQ to FASTA</h2>
+	<img src="assets/pipeline_convert1.png" class="right">
+	<img src="assets/pipeline_convert2.png" class="right">
+	This option allows users to convert between FASTA and FASTQ files. For FASTA to FASTQ conversion, QUAL should be specified; otherwise an arbitary score of 40 for each base is generated. User can switch between 33 and 66 PHRED score values. Clustering, chimera checking and identifying sequences steps do not support FASTQ files, and these needs to be converted to FASTA file. 
+	<h2>Build a BLAST+ database</h2>
+	<img src="assets/pipeline_builddb.png" class="right">
+	Database are often provided in FASTA formats. To use them with BLAST+, users need to convert the FASTA file into binary BLAST+ database format. This helps to speed up BLAST+ as indices are built within the files for faster lookup of reference sequences. The pipeline automatically shows FASTA files copied into the db/ folder; otherwise use OPEN dialog to select the correct file.
+	<h2>Autocorrect read strands</h2>
+	<img src="assets/pipeline_strand.png" class="right">
+	Ensuring reads consistently show the same strand is important when clustering and chimera checking, as these do not support both strand searching, which is available for BLAST+. Typically knowledge of primer sequences can be used to convert reads into the correct strand. This option is enabled in the cleaning step, where users can specify that reads strands are mixed. When using tagmentation based Illumina, primer information might be missing. This script allows strand correction of input sequences using a reference database or BLAST+ output.
+	<h2>Fetch reference sequences from BLAST</h2>
+	<img src="assets/pipeline_pickref.png" class="right">
+	BLAST+ results can be used to fetch reference sequences from a BLAST+ database. This can be used when building a custom database that only contains reference sequences matching input sequences.
+	<h2>Convert between gDAT and QIIME v1 format</h2>
+	<img src="assets/pipeline_qiime.png" class="right">
+	The pipeline supports conversion of cleaned FASTA files to QIIME v1 and <i>visa versa</i>, to allow interoperability with different pipelines. This allows users to select which pipeline to use for cleaning and identification steps. The pipeline will automatically detect FASTA file format based how the headers are formated. gDAT uses | (dash) and QIIME v1 uses _ (underscore) to separate sample information from the techincal sequence information provided by the sequencer.
+	<div style="clear: both;"></div>
+</div>
+<div class="selector">
+	<h1>Index</h1>
+	<ul>
+<script>
+var h2 = document.querySelectorAll("h2");
+for(var i = 0; i < h2.length; i++){
+	var nr = i + 1;
+	document.write("<li><a href='#i" + i + "'><small>" + nr + ".</small> " + h2[i].innerHTML + "</a></li>");
+	h2[i].innerHTML += "<a name='i" + i + "'></a>";
+}
+</script>
+	</ul>
+</div>
+	</body>
+</html>
