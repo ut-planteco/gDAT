@@ -1,13 +1,12 @@
 # gDAT (Graphical Downstream Analysis Tool)
-gDAT is open-sourced pipeline, which offers an intuitive graphical interface allowing users to conduct reliable HTS read analysis that yields datasets ready for statistical analysis. The main focus of the pipeline is to maximise the ease-of-use of different tools by having most optimal predefined input parameters and allowing selection of files through open dialog, thus avoiding input errors, which can arise when working from the command line. The pipeline is a generalisation of the procedures used in several studies of arbuscular mycorrhizal (AM) fungal communities and takes into account best practises while dealing with HTS data. As such, the pipeline parameter defaults are optimised for analysis of AM fungal DNA sequences of small subunit (SSU) ribosomal RNA gene or internal transcribed spacer (ITS) regions. Nonetheless, the workflow is generally applicable to analysis of a broad range of metabarcoding data generated with different sequencing platforms and multitude of organism groups. Main focus group of the pipeline are newcomers with minimal experiments with command line and bioinformatic tools. Pipeline is optimized to be used with commodity hardware. 
+gDAT is an open-sourced pipeline, which offers an intuitive graphical interface allowing users to conduct reliable HTS read analysis that yields datasets ready for statistical analysis. The main focus of the pipeline is to maximise the ease-of-use of different tools by having most optimal predefined input parameters and allowing selection of files through open box dialogs, thus avoiding input errors, which can arise when working from the command line. The pipeline is a generalisation of the procedures used in several studies of arbuscular mycorrhizal (AM) fungal communities and takes into account best practises while dealing with HTS data. As such, the pipeline parameter defaults are optimised for analysis of AM fungal DNA sequences of small subunit (SSU) ribosomal RNA gene or internal transcribed spacer (ITS) regions. Nonetheless, the workflow is generally applicable to analysis of a broad range of metabarcoding data generated with different sequencing platforms and multitude of organism groups. Main focus group for the pipeline are ecologist who havve minimal experiments with command line and bioinformatics tools. Pipeline is optimized to be used with commodity hardware.
 
-The interface and main functions of the gDAT.
-
-![main.png](https://github.com/utplanteco/gDAT/blob/master/manual/assets/pipeline_main.png?raw=true)
+## The interface and main functions of the gDAT.
+![main.png](https://github.com/ut-planteco/gDAT/raw/master/manual/assets/pipeline_main.png)
 
 ## Quick start
 
-Binaries for Windows 10, Linux and macOS can be [downloaded here](https://github.com/utplanteco/gDAT/releases). 
+Binaries for Windows 10, Linux and macOS can be [downloaded here](https://github.com/ut-planteco/gDAT/releases). 
 
 ## Prerequisite
 
@@ -16,17 +15,17 @@ If quick start option is not used, user needs to install following programs and 
 ```
 sudo apt install vsearch
 sudo apt install ncbi-blast+
-sudo apt install python2 python2-tk
+sudo apt install python python-tk
 sudo apt install python3 python3-tk
 ```
 
-## Download pipeline
+## Download the pipeline
 
-Pipeline is bundled to binaries and easiest is to download [the binary set](https://github.com/utplanteco/gDAT/releases). Users can manually download GitHub repository, release version or from command line with wget or using GitHub clone. 
+Pipeline is bundled to binaries and easiest is to download [the binary set](https://github.com/ut-planteco/gDAT/releases). Users can manually download GitHub repository, release version or from command line with wget or using GitHub clone. 
 
-## Start pipeline
+## Start the pipeline
 
-Pipeline can be executed using `gdat.py` file with python or using double click from file manager (last option dependant of operating system and configuration).
+Pipeline can be executed using `gdat.py` file with python or using double click from file manager (last option is dependant of operating system and configuration).
 
 `python gdat.py`
 
@@ -36,7 +35,7 @@ The gDAT documentation is available under the manual/ folder as HTML files that 
 
 ## License
 
-The gDAT is distributed under the GNU General Public License version 3.
+The gDAT is distributed under the GNU General Public License version 3. [CC-BY](https://creativecommons.org/licenses/by/3.0/)
 
 ## Examples
 
