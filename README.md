@@ -1,12 +1,12 @@
 # gDAT (Graphical Downstream Analysis Tool)
 gDAT is an open-sourced pipeline, which offers an intuitive graphical interface allowing users to conduct reliable HTS read analysis that yields datasets ready for statistical analysis. The main focus of the pipeline is to maximise the ease-of-use of different tools by having most optimal predefined input parameters and allowing selection of files through open box dialogs, thus avoiding input errors, which can arise when working from the command line. The pipeline is a generalisation of the procedures used in several studies of arbuscular mycorrhizal (AM) fungal communities and takes into account best practises while dealing with HTS data. As such, the pipeline parameter defaults are optimised for analysis of AM fungal DNA sequences of small subunit (SSU) ribosomal RNA gene or internal transcribed spacer (ITS) regions. Nonetheless, the workflow is generally applicable to analysis of a broad range of metabarcoding data generated with different sequencing platforms and multitude of organism groups. Main focus group for the pipeline are ecologist who havve minimal experiments with command line and bioinformatics tools. Pipeline is optimized to be used with commodity hardware.
 
-## The interface and main functions of the gDAT.
-![main.png](https://github.com/ut-planteco/gDAT/raw/master/manual/assets/pipeline_main.png)
-
 ## Quick start
 
 Binaries for Windows 10, Linux and macOS can be [downloaded here](https://github.com/ut-planteco/gDAT/releases). 
+
+## The interface and main functions of the gDAT.
+![main.png](https://github.com/ut-planteco/gDAT/raw/master/manual/assets/pipeline_main.png)
 
 ## Prerequisite
 

@@ -2143,7 +2143,10 @@ class PythonGUI(tk.Tk):
         tk.Tk.__init__(self)
         self.title("gDAT pipeline")
         self.geometry("+0+5")
-        self.iconbitmap("gdat.ico") 
+        try:
+            self.iconbitmap("gdat.ico")
+        except:
+            sys.stderr.write("Cannot open gdat.ico\n")
         self._frame = None
         #default_font = font.nametofont("TkDefaultFont")
         #default_font.configure(family='Helvetica', size=12)
