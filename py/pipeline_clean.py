@@ -148,7 +148,10 @@ def avgQuality(qual, phred):
 		return 0
 	if sys.version_info >= (3, 0):
 		arr = array.array('b')
-		arr.frombytes(qual.encode())
+		try:
+			arr.frombytes(qual.encode())
+		except:
+			arr.frombytes(qual)
 	else:
 		arr = array.array('b', qual)
 	return (sum(arr) / float(len(qual))) - phred
@@ -161,9 +164,15 @@ def calculateSlidingWindow(quality, threshold, window, phred):
 	for i in range(len(quality) - window):
 		if sys.version_info >= (3, 0):
 			arr = array.array('b')
-			arr.frombytes(quality[i:i + window].encode())
+			try:
+				arr.frombytes(quality[i:i + window].encode())
+			except:
+				arr.frombytes(quality[i:i + window])
 		else:
-			arr = array.array('b', quality[i:i + window].encode())
+			try:
+				arr = array.array('b', quality[i:i + window].encode())
+			except:
+				arr = array.array('b', quality[i:i + window])
 		avg = sum(arr) / float(window) - phred
 		if avg < threshold:
 			return i

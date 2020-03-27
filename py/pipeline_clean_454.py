@@ -129,9 +129,15 @@ def calculateAverageQuality(quality, fq, phred):
 		if fq is not None:
 			if sys.version_info >= (3, 0):
 				arr = array.array('b')
-				arr.frombytes(quality.encode())
+				try:
+					arr.frombytes(quality.encode())
+				except:
+					arr.frombytes(quality)
 			else:
-				arr = array.array('b', quality.encode())
+				try:
+					arr = array.array('b', quality.encode())
+				except:
+					arr = array.array('b', quality)
 			return (sum(arr) / float(len(quality))) - phred
 		else:
 			return sum(quality) / len(quality)
@@ -143,9 +149,15 @@ def calculateSlidingWindow(quality, threshold, window, fq, phred):
 		if fq is not None:
 			if sys.version_info >= (3, 0):
 				arr = array.array('b')
-				arr.frombytes(quality[i:i + window].encode())
+				try:
+					arr.frombytes(quality[i:i + window].encode())
+				except:
+					arr.frombytes(quality[i:i + window])
 			else:
-				arr = array.array('b', quality[i:i + window].encode())
+				try:
+					arr = array.array('b', quality[i:i + window].encode())
+				except:
+					arr = array.array('b', quality[i:i + window])
 			avg = sum(arr) / float(window) - phred
 			if avg < threshold:
 				return i

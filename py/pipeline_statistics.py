@@ -70,7 +70,10 @@ def packedFile(filename):
 def sumQual(qual):
 	if sys.version_info >= (3, 0):
 		arr = array.array('b')
-		arr.frombytes(qual.encode())
+		try:
+			arr.frombytes(qual.encode())
+		except:
+			arr.frombytes(qual)
 	else:
 		arr = array.array('b', qual)
 	return sum(arr)
@@ -78,7 +81,10 @@ def sumQual(qual):
 def calcQual(qual):
 	if sys.version_info >= (3, 0):
 		arr = array.array('b')
-		arr.frombytes(qual.encode())
+		try:
+			arr.frombytes(qual.encode())
+		except:
+			arr.frombytes(qual)
 	else:
 		arr = array.array('b', qual)
 	return (sum(arr) / float(len(qual))) - args.phred

@@ -486,7 +486,7 @@ Leave empty if an interleaved file is used.""",
         if allowed_files == "fasta+fastq":
             return (("FASTA/FASTQ files", ("*.fasta", "*.fna", "*.fasta.gz", "*.fna.gz", "*.fastq", "*.fq", "*.fastq.gz", "*.fq", "*.fq.gz")),("all files","*.*"))
         elif allowed_files == "qual":
-            return (("QUALITY files", "*.qual", "*.qual.gz"),("all files","*.*"))
+            return (("QUALITY files", ("*.qual", "*.qual.gz")),("all files","*.*"))
         elif allowed_files == "fastq":
             return (("FASTQ files", ("*.fastq", "*.fq", "*.fastq.gz", "*.fq", "*.fq.gz")),("all files","*.*"))
         elif allowed_files == "uc":
@@ -1023,7 +1023,7 @@ class QiimeFrame(BaseFrame):
         errors = []
         if os.path.isfile(self.form_get('qiime')) is False:
             errors.append("Input file is not selected or does not exist")
-        _output = "%s.converted.fasta" % self.form_get('qiime').replace(".fasta", "").replace(".fna")
+        _output = "%s.converted.fasta" % self.form_get('qiime').replace(".fasta", "").replace(".fna", "")
 
         if self.check_errors(errors) is False:
             self.run_command('python py/pipeline_convert_qiime.py -i "%s" > "%s.ids"' %
@@ -2247,8 +2247,11 @@ class ConsoleGUI(tk.Tk):
         tk.Button(self, text="Terminate process and close window", width = 70, command = lambda: self.kill_process()).pack()
         #self.protocol("WM_DELETE_WINDOW", self.kill_process())
         self.text.config(background="black", foreground="white")
-        self.append_line("Executing command:\n%s\n\nPlease wait for the 'process finished' text to close the window\n\n" % self.command)
+        self.append_line("Executing command:\n%s" % self.command)
+        self.append_line("Please wait for the 'process finished' text to close the window")
         if os.name == "nt" or sys.version_info[0] >= 3:
+            if sys.version_info[0] >= 3:
+                self.command = self.command.decode()
             self.process = subprocess.Popen(self.command, 
                 stdout=subprocess.PIPE, 
                 stderr=subprocess.PIPE,
@@ -2316,6 +2319,8 @@ class ConsoleGUI(tk.Tk):
                 line = self.queue.get(False)
                 if len(line) > 0:
                     if self.fh:
+                        if sys.version_info[0] >= 3:
+                            line = line.decode()
                         self.fh.write("[%s] %s\n" % (datetime.now().strftime("%d/%m/%Y %H:%M:%S"), line.strip()))
                     self.append_line(line)
             except Empty:
