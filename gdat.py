@@ -357,7 +357,9 @@ Leave empty if an interleaved file is used.""",
 
         "kmershow" : "Specify how many kmers to display in the output, use 0 to display all of them.",
 
-        "kmerfront" : "Only calculate kmer occurrences at the front of the sequence, where barcode and/or primers are located."
+        "kmerfront" : "Only calculate kmer occurrences at the front of the sequence, where barcode and/or primers are located.",
+
+        "resolution" : "Specify minimum taxonomic level to be included when constructing common taxonomy. This helps to reduce uncultured hits to improve output of the BLAST."
 
     }  
 
@@ -1054,12 +1056,13 @@ class TaxonomyFrame(BaseFrame):
         _output = "%s.converted.blast" % self.form_get('blast').replace(".blast", "")
 
         if self.check_errors(errors) is False:
-            self.run_command('python py/pipeline_convert_common_taxa.py -b "%s" -lookup "%s" -i "%s" -l "%s" > "%s"' %
+            self.run_command('python py/pipeline_convert_common_taxa.py -b "%s" -lookup "%s" -i "%s" -l "%s" -resolution "%s" > "%s"' %
                 (
                 self.form_get('blast'),
                 self.form_get('pick_lookup'),
                 self.form_get('identity'),
                 self.form_get('alignment'),
+                self.form_get('resolution'),
                 _output
                 ), output = _output)
 
@@ -1073,6 +1076,7 @@ class TaxonomyFrame(BaseFrame):
         self.form_input("Select hit lookup file (*.taxa, optional)", "file", 'pick_lookup', allowed_files = 'taxa')
         self.form_input("Alignment identity (%)", "int", 'identity', label_from = 0, label_to = 100, default = 95, active = -1)
         self.form_input("Alignment length (%)", "int", 'alignment', label_from = 0, label_to = 100, default = 90, active = -1)
+        self.form_input("Minimum taxonomy resolution", "int", 'resolution', label_from = 0, label_to = 100, default = 3, active = -1)
         self.run_buttons()
 
 class DatabaseFrame(BaseFrame):

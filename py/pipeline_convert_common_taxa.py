@@ -27,6 +27,10 @@ parser.add_argument(
 	specify the minimum hit identity in percentage
 	""")
 parser.add_argument(
+	'-resolution', metavar = 'RESOLUTION', required = True, type = int, default = 3, help = """
+	specify the minimum taxonomic level to be used to build the consensus taxonomy. This helps to reduce hits that are marked as uncultured. Default up to 3 levels need to be defined
+	""")
+parser.add_argument(
 	'-l', metavar = 'ALIGNMENT', required = True, type = int, help = """
 	specify the minimum allowed hit aliginment length in percentage
 	""")
@@ -38,7 +42,9 @@ for f in args.lookup:
 	f = f.strip()
 	col = f.split("\t")
 	if len(col) > 1:
-		lookup[col[0]] = col[1]
+		tmp = col[1].split("; ");
+		if len(tmp) >= args.resolution:
+			lookup[col[0]] = col[1]
 
 i = 0
 multiple_queries = {}
