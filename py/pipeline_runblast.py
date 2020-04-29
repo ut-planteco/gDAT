@@ -37,8 +37,16 @@ parser.add_argument(
 	specify the number of threads to be used by the BLAST+ program
 	""")
 parser.add_argument(
+	'-i', metavar = 'THREADS', required = False, type = int, default = 95, help = """
+	specify lower identity threshold to write out BLAST results to save space
+	""")
+parser.add_argument(
 	'-program', metavar = 'PROGRAM', required = False, type = str, default = "blastn", help = """
 	specify BLAST+ program binary file location. If installed as system wide variable or in same folder, use "blastn"
+	""")
+parser.add_argument(
+	'-py', metavar = 'PROGRAM', required = False, type = str, default = "python", help = """
+	specify Python program binary file location. If installed as system wide variable or in same folder, use "python"
 	""")
 	
 args = parser.parse_args()
@@ -64,12 +72,15 @@ for i in ids:
 	if predefined_id <= i:
 		console.log("Executing BLAST+ against partition %s\n" % i)
 		# construct BLAST command
-		command = '%s -query "%s" -dust no -evalue %s -max_target_seqs %s -num_threads %s -db "%s" -outfmt "6 qseqid sseqid stitle evalue pident nident length frames qstart qend sstart send qlen slen score" > "%s.%d.blast"' % (args.program,
+		command = '%s -query "%s" -dust no -evalue %s -max_target_seqs %s -num_threads %s -db "%s" -outfmt "6 qseqid sseqid stitle evalue pident nident length frames qstart qend sstart send qlen slen score" | %s py/pipeline_filter.py -f "%s" -i %s > "%s.%d.blast"' % (args.program,
 			args.f,
 			args.evalue,
 			args.hits,
 			args.t,
 			ids[i],
+			args.py,
+			args.f,
+			args.i,
 			args.f,
 			i
 		)

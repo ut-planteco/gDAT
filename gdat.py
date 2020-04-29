@@ -1649,17 +1649,22 @@ class BlastFrame(BaseFrame):
                     "-hits", "hits",
                     "-evalue", "evalue",
                     "-t", "threads",
+                    "-i", "identity",
+                    "-py", "#%s" % self.configuration['python_exe'],
                     "-program", "#%s" % _cmd
                 ]
                 self.run_command(" ".join(self.get_command("python py/pipeline_runblast.py", params)), output = "%s.#.blast" % _output)
 
             else:
-                self.run_command('blastn -query "%s" -dust no -evalue %s -max_target_seqs %s -num_threads %d -db "%s" -outfmt "6 qseqid sseqid stitle evalue pident nident length frames qstart qend sstart send qlen slen score" > "%s.blast"' %
+                self.run_command('blastn -query "%s" -dust no -evalue %s -max_target_seqs %s -num_threads %d -db "%s" -outfmt "6 qseqid sseqid stitle evalue pident nident length frames qstart qend sstart send qlen slen score" | %s py/pipeline_filter.py -f "%s" -i "%s" > "%s.blast"' %
                     (self.form_get('input'),
                     self.form_get('evalue'),
                     self.form_get('hits'),
                     self.form_get('threads'),
                     _database,
+                    self.configuration['python_exe'],
+                    self.form_get('input'),
+                    self.form_get('identity'),
                     _output), output = "%s.blast" % _output)
 
     def create_widgets(self):
@@ -1673,7 +1678,8 @@ class BlastFrame(BaseFrame):
         
         self.form_title("Options")
         self.form_display_dbs()
-        self.form_input("E-value", "entry", 'evalue', default = "1e-50")
+        self.form_input("E-value", "entry", 'evalue', default = "1e-10")
+        self.form_input("Identity threshold", "int", 'identity', label_from = 0, label_to = 100, default = 95, active = -1)
         self.form_input("Best hits", "int", 'hits', label_from = 1, label_to = 100, default = 1, active = -1)
         self.form_input("NCBI BLAST+ or partitioned database", "check", "ncbi", box_label = 'automatically run multiple partitions')
         self.form_input("Number of threads", "int", 'threads', label_from = 0, label_to = 64, default = 1, active = -1)

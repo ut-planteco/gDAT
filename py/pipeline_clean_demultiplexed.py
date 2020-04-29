@@ -457,28 +457,28 @@ for col in files:
 					# trim based on minimum base criteria
 					if args.min_base_trimmed > 0:
 						for _i in range(len(f1)):
-							if f1[_i] < args.min_base_trimmed:
+							if ord(f1[_i]) - args.phred < args.min_base_trimmed:
 								sequence1 = sequence1[:_i - 1]
 								f1 = f1[:_i - 1] 
 								break
 						if f2:
 							for _i in range(len(f2)):
-								if f2[_i] < args.min_base_trimmed:
+								if ord(f2[_i]) - args.phred < args.min_base_trimmed:
 									sequence2 = sequence2[:_i - 1]
 									f2 = f2[:_i - 1]
 									break
 					# include based on minimum base criteria
 					if args.min_allowed_base > 0:
 						for _i in f1:
-							if ord(_i) + 33 < args.min_allowed_base:
+							if ord(_i) - args.phred < args.min_allowed_base:
 								selected = False
 								break
 						if f2 and selected:
 							for _i in f2:
-								if ord(_i) + 33 < args.min_allowed_base:
+								if ord(_i) - args.phred < args.min_allowed_base:
 									selected = False
 									break						
-					if selected and (avgQuality(f1, args.phred) < args.q or avgQuality(f2, args.phred) < args.q):
+					if selected and (avgQuality(f1, args.phred) + avgQuality(f2, args.phred)) / 2 < args.q:
 						selected = False
 					if args.ml is not None and (len(sequence1) < args.ml or len(sequence2) < args.ml):
 						selected = False
@@ -549,13 +549,17 @@ for col in files:
 		files_f += 1
 		if name is '':
 			continue
+		file1_packed = False
 		if packedFile(name):
 			fh = gzip.open(name, "r")
+			file1_packed = True
 		else:
 			fh = open(name, "r")
 		
 		for line in fh:
 			line = line.strip()
+			if file1_packed:
+				line = line.decode()
 			if i % 4 == 0:
 				seq_i += 1
 				if seq_i % 100000 == 0:
@@ -598,14 +602,14 @@ for col in files:
 							break
 				if args.min_base_trimmed > 0:
 					for _i in range(len(line)):
-						if line[_i] < args.min_base_trimmed:
+						if ord(line[_i]) - args.phred < args.min_base_trimmed:
 							sequence = sequence[:_i - 1]
 							line = line[:_i - 1] 
 							break
 				# include based on minimum base criteria
 				if args.min_allowed_base > 0:
 					for _i in line:
-						if _i < args.min_allowed_base:
+						if ord(_i) - args.phred < args.min_allowed_base:
 							selected = False
 							break
 				if selected and avgQuality(line, args.phred) < args.q:

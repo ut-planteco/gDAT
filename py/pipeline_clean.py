@@ -639,25 +639,25 @@ for r1 in frh:
 			# trim based on minimum base criteria
 			if args.min_base_trimmed > 0:
 				for _i in range(len(fqual)):
-					if fqual[i] < args.min_base_trimmed:
+					if ord(fqual[i]) - args.phred < args.min_base_trimmed:
 						fseq = fseq[:_i - 1]
 						fqual = fqual[:_i - 1] 
 						break
 				if rseq:
 					for i in range(len(rqual)):
-						if rqual[i] < args.min_base_trimmed:
+						if ord(rqual[i]) - args.phred < args.min_base_trimmed:
 							rseq = rseq[:i - 1]
 							rqual = rqual[:i - 1]
 							break
 			# include based on minimum base criteria
 			if args.min_allowed_base > 0:
 				for _i in fqual:
-					if ord(_i) + 33 < args.min_allowed_base:
+					if ord(_i) - args.phred < args.min_allowed_base:
 						select = False
 						break
 				if rseq and select:
 					for _i in rqual:
-						if ord(_i) + 33 < args.min_allowed_base:
+						if ord(_i) - args.phred < args.min_allowed_base:
 							select = False
 							break
 			# check if minimum length is fulfilled for forward read
@@ -666,12 +666,13 @@ for r1 in frh:
 			# check if minimum length is fulfilled for reverse read
 			if rseq and args.ml > 0 and len(rseq) < args.ml:
 				select = False
-			# check average quality of the remaining sequence for forward read
-			if avgQuality(fqual, args.phred) < args.quality:
-				select = False
-			# check average quality of the remaining sequence for reverse read
-			if rqual and avgQuality(rqual, args.phred) < args.quality:
-				select = False
+			# check average quality of the remaining sequence for forward/reverse read
+			if rqual:
+				if (avgQuality(fqual, args.phred) + avgQuality(rqual, args.phred)) / 2 < args.quality:
+					select = False
+			else:
+				if avgQuality(fqual, args.phred) < args.quality:
+					select = False
 			# check homopolymers and remove sequences if they occur in forward or reverse reads
 			if len(homopolymers) > 0:
 				for homopolymer in homopolymers:
