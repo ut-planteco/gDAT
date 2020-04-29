@@ -266,6 +266,9 @@ if args.proportions or args.commontaxa:
 	for f in fh:
 		f = f.strip()
 		col = f.split("\t")
+		# ignore short rows
+		if len(col) < 13:
+			continue
 		if int(col[13]) - int(col[11]) < 10 and int(col[12]) - int(col[9]) >= 10:
 			# if reference sequence ends, substract the missing part (query sequence runs over refernce sequence)
 			mlen = min(int(col[12]), int(col[13])) - (int(col[12]) - int(col[9]))
@@ -343,6 +346,9 @@ console.log("Parsing BLAST+\n")
 for f in args.b:
 	f = f.strip()
 	col = f.split("\t")
+	# ignore short rows
+	if len(col) < 13:
+		continue
 	if int(col[13]) - int(col[11]) < 10 and int(col[12]) - int(col[9]) >= 10:
 		# if reference sequence ends, substract the missing part (query sequence runs over refernce sequence)
 		mlen = min(int(col[12]), int(col[13])) - (int(col[12]) - int(col[9]))

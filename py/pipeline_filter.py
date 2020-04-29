@@ -44,6 +44,6 @@ for line in sys.stdin:
 			done = headers[col[0]] / l * 100.0
 			sys.stderr.write("Processed %d/%d BLAST hits (%.2f%%)\n" % (headers[col[0]], l, done))
 		if float(col[4]) >= args.i:
-			print(line)
+			sys.stdout.write(line)
 	except:
 		continue
