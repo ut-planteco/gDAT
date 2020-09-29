@@ -155,10 +155,6 @@ def avgQuality(qual, phred):
 	else:
 		arr = array.array('b', qual)
 	return (sum(arr) / float(len(qual))) - phred
-	#total = 0
-	#for i in qual:
-	#	total += (ord(i) - phred)
-	#return float(total) / len(qual)
 
 def calculateSlidingWindow(quality, threshold, window, phred):
 	for i in range(len(quality) - window):
@@ -176,12 +172,6 @@ def calculateSlidingWindow(quality, threshold, window, phred):
 		avg = sum(arr) / float(window) - phred
 		if avg < threshold:
 			return i
-		#q_sum = 0
-		#for k in quality[i:(i + window)]:
-		#	q_sum += ord(k) - phred
-		#avg = q_sum / float(window)
-		#if avg < threshold:
-		#	return i
 	return len(quality)
 
 def startsWith(full, sub):
@@ -565,32 +555,6 @@ for r1 in frh:
 						if index in lookup:
 							sample = lookup[index]
 							break
-		"""
-				if len(args.forward_primer) > 0:
-					fprim_found = False
-					for i in xrange(0, args.allow_primer_position):
-						if fseq[i:len(args.forward_primer) + i] in fprim:
-							if args.remove_primer:
-								fseq = fseq[i + len(args.forward_primer):]
-								fqual = fqual[i + len(args.forward_primer):]
-							fprim_found = True
-							i = args.allow_primer_position
-							break
-					if not fprim_found:
-						continue
-				if len(args.reverse_primer) > 0 and rseq is not None:
-					rprim_found = False
-					for i in xrange(0, args.allow_primer_position):
-						if rseq[i:len(args.reverse_primer) + i] in rprim:
-							if args.remove_primer:
-								rseq = rseq[i + len(args.reverse_primer):]
-								rqual = rqual[i + len(args.reverse_primer):]
-							rprim_found = True
-							i = args.allow_primer_position
-							break
-					if not rprim_found:
-						continue
-		"""
 		if sample:
 			avg_quality = 40
 			select = True

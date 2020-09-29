@@ -403,21 +403,17 @@ for col in files:
 						if trim_len < len(f2):
 							f1 = f1[:trim_len]
 							sequence2 = sequence2[:trim_len]
-					fprimer_len = 0
-					rprimer_len = 0
-					selected = False
-					if len(fprimer) == 0 and len(rprimer) == 0:
-						selected = True
+					fprimer_chk = False
+					rprimer_chk = False
+					selected = True
 					if len(fprimer) > 0:
 						for l in flookup_lens:
 							if sequence1[:l] in flookup:
-								selected = True
-								fprimer_len = l
+								fprimer_chk = True
 								break
 							if args.primers_mixed:
 								if sequence2[:l] in flookup:
-									selected = True
-									fprimer_len = l
+									fprimer_chk = True
 									# swap sequences around to print them out correctly
 									sequence1, sequence2 = sequence2, sequence1
 									f1, f2 = f2, f1
@@ -425,14 +421,19 @@ for col in files:
 					if len(rprimer) > 0:
 						for l in rlookup_lens:
 							if sequence2[:l] in rlookup:
-								selected = True
-								rprimer_len = l
+								rprimer_chk = True
 								break
+					if len(fprimer) > 0 and fprimer_chk = False:
+						selected = False
+					if len(rprimer) > 0 and rprimer_chk = False:
+						selected = False
 					if args.remove_primer:
-						sequence1 = sequence1[fprimer_len:]
-						f1 = f1[fprimer_len:]
-						sequence2 = sequence2[rprimer_len:]
-						f2 = f2[rprimer_len:]
+						if len(fprimer) > 0:
+							sequence1 = sequence1[len(fprimer):]
+							f1 = f1[len(fprimer):]
+						if len(rprimer) > 0:
+							sequence2 = sequence2[len(rprimer):]
+							f2 = f2[len(rprimer):]
 					if args.forward_trim > 0:
 						sequence1 = sequence1[0:args.forward_trim]
 						f1 = f1[0:args.forward_trim]
@@ -485,7 +486,7 @@ for col in files:
 					if len(homopolymers) > 0:
 						for homopolymer in homopolymers:
 							if homopolymer in sequence1:
-								# truncate homopolymer with quality
+								# truncate homopolymer reads and quality
 								_s = ""
 								_q = ""
 								_chr = ""
@@ -509,7 +510,7 @@ for col in files:
 								break
 						for homopolymer in homopolymers:
 							if homopolymer in sequence2:
-								# truncate homopolymer with quality
+								# truncate homopolymer reads and quality
 								_s = ""
 								_q = ""
 								_chr = ""
@@ -619,7 +620,7 @@ for col in files:
 				if len(homopolymers) > 0:
 					for homopolymer in homopolymers:
 						if homopolymer in sequence:
-							# truncate homopolymer with quality
+							# truncate homopolymer reads and quality
 							_s = ""
 							_q = ""
 							_chr = ""

@@ -37,11 +37,13 @@ sys.stderr.write("Found %d sequences\n" % l)
 if l == 0:
 	l = 1
 
+last_l = 0
 for line in sys.stdin:
 	col = line.split("\t")
 	try:
-		if col[0] in headers:
+		if col[0] in headers and headers[col[0]] > last_l:
 			done = headers[col[0]] / l * 100.0
+			last_l = headers[col[0]]
 			sys.stderr.write("Processed %d/%d BLAST hits (%.2f%%)\n" % (headers[col[0]], l, done))
 		if float(col[4]) >= args.i:
 			sys.stdout.write(line)

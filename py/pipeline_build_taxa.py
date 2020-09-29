@@ -21,7 +21,7 @@ parser.add_argument(
 	""")
 parser.add_argument(
 	'-ti', metavar = 'ID FILE', required = True, type = open, help = """
-	Taxonomy file where for each GenBank accession ID lookup node ID is specified (gi_taxid_nucl.dmp or gi_taxid_nucl.dmp.gz)
+	Taxonomy file where for each GenBank accession ID lookup node ID is specified (nucl_gb.accession2taxid or nucl_gb.accession2taxid.gz)
 	""")
 parser.add_argument(
 	'-tt', metavar = 'TAXONOMY FILE', required = True, type = open, help = """
@@ -139,14 +139,14 @@ for f in fti:
 	else:
 		col = f.split("\t")
 	try:
-		_id = int(col[0])
+		_id = int(col[3].strip())
 	except:
 		# skip, probably wrong format?
 		continue
 	if _id in ids:
 		i += 1
 		try:
-			converted_id = int(col[1].strip())
+			converted_id = int(col[2])
 		except:
 			# skip, probably wrong format?
 			continue

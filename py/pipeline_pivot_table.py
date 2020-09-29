@@ -74,7 +74,7 @@ parser.add_argument(
 	""")
 parser.add_argument(
 	'-ti', metavar = 'ID_FILE', type = open, help = """
-	specify a taxonomy file, where for each GenBank accession code a node ID is specified (gi_taxid_nucl.dmp)
+	specify a taxonomy file, where for each GenBank accession code a node ID is specified (nucl_gb.accession2taxid or nucl_gb.accession2taxid.gz)
 	""")
 parser.add_argument(
 	'-zeros', metavar = 'ZEROS', type = int, default = 0, help = """
@@ -167,10 +167,10 @@ if args.tn and args.t == 2 and not args.lookup:
 	i = 0
 	for f in args.ti:
 		col = f.split("\t")
-		_id = int(col[0])
+		_id = int(col[3].strip())
 		if _id in ids:
 			i += 1
-			converted_id = int(col[1].strip())
+			converted_id = int(col[2])
 			ids[_id] = converted_id
 			converted_ids[converted_id] = True
 			if i % 10 == 0:
