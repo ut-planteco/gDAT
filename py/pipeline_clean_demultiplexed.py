@@ -423,9 +423,9 @@ for col in files:
 							if sequence2[:l] in rlookup:
 								rprimer_chk = True
 								break
-					if len(fprimer) > 0 and fprimer_chk = False:
+					if len(fprimer) > 0 and fprimer_chk == False:
 						selected = False
-					if len(rprimer) > 0 and rprimer_chk = False:
+					if len(rprimer) > 0 and rprimer_chk == False:
 						selected = False
 					if args.remove_primer:
 						if len(fprimer) > 0:
