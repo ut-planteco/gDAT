@@ -217,7 +217,7 @@ Leave empty if an interleaved file is used.""",
  
         "taxonomynames" : "Specify an NCBI taxonomy name file (names.dmp); supports packed .gz files.",
  
-        "taxonomynucl" : "Specify an NCBI taxonomy lookup file (gi_taxid_nucl.dmp); supports packed .gz files.",
+        "taxonomynucl" : "Specify an NCBI taxonomy lookup file (nucl_gb.accession2taxid); supports packed .gz files.",
  
         "mode" : "Specify the BLAST+ database used. For MaarjAM and UNITE, the last part of the hit description is used; GB/NCBI uses the second column GB accession code; and full description uses the third column from the BLAST+ output.",
  
@@ -853,7 +853,7 @@ class PivotFrame(BaseFrame):
         #self.form_title("GB/NCBI database options")
         #self.form_input("Taxonomy node file (nodes.dmp)", "file", 'taxonomynode', default = "taxonomy/nodes.dmp" if os.path.isfile("taxonomy/nodes.dmp") else "")
         #self.form_input("Taxonomy description file (names.dmp)", "file", 'taxonomynames', default = "taxonomy/names.dmp" if os.path.isfile("taxonomy/names.dmp") else "")
-        #self.form_input("Taxonomy tree file (gi_taxid_nucl.dmp)", "file", 'taxonomynucl', default = "taxonomy/gi_taxid_nucl.dmp" if os.path.isfile("taxonomy/gi_taxid_nucl.dmp") else "")
+        #self.form_input("Taxonomy tree file (nucl_gb.accession2taxid)", "file", 'taxonomynucl', default = "taxonomy/nucl_gb.accession2taxid" if os.path.isfile("taxonomy/nucl_gb.accession2taxid") else "")
 
         self.run_buttons()
 
@@ -1581,13 +1581,13 @@ class LookupFrame(BaseFrame):
         
         self.form_input("Taxonomy node file (nodes.dmp)", "file", 'taxonomynode', default = "%snodes.dmp" % self.configuration['taxonomy_folder'] if os.path.isfile("%snodes.dmp" % self.configuration['taxonomy_folder']) else "", allowed_files = 'dmp')
         self.form_input("Taxonomy description file (names.dmp)", "file", 'taxonomynames', default = "%snames.dmp" % self.configuration['taxonomy_folder'] if os.path.isfile("%snames.dmp" % self.configuration['taxonomy_folder']) else "", allowed_files = 'dmp')
-        if os.path.isfile("%sgi_taxid_nucl.dmp.gz" % self.configuration['taxonomy_folder']):
-            tmp_file = "%sgi_taxid_nucl.dmp.gz" % self.configuration['taxonomy_folder']
-        elif os.path.isfile("%sgi_taxid_nucl.dmp" % self.configuration['taxonomy_folder']):
-            tmp_file = "%sgi_taxid_nucl.dmp" % self.configuration['taxonomy_folder']
+        if os.path.isfile("%snucl_gb.accession2taxid.gz" % self.configuration['taxonomy_folder']):
+            tmp_file = "%snucl_gb.accession2taxid.gz" % self.configuration['taxonomy_folder']
+        elif os.path.isfile("%snucl_gb.accession2taxid" % self.configuration['taxonomy_folder']):
+            tmp_file = "%snucl_gb.accession2taxid" % self.configuration['taxonomy_folder']
         else:
             tmp_file = ""
-        self.form_input("Taxonomy tree file (gi_taxid_nucl.dmp)", "file", "taxonomynucl", default = tmp_file, allowed_files = 'dmp')
+        self.form_input("Taxonomy tree file (nucl_gb.accession2taxid)", "file", "taxonomynucl", default = tmp_file, allowed_files = 'dmp')
 
         self.form_title("Output options")
         self.form_input("Use simplified output", "check", "simplify", box_label = "", default = 1)
