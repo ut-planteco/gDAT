@@ -189,7 +189,7 @@ if args.i:
 		if fh:
 			fh.close()
 			if args.separatestats:
-				fh = open("%s.kmer%d.stats.txt" % (f, KMER), "wb+")
+				fh = open("%s.kmer%d.stats.txt" % (f, KMER), "w")
 				fh.write("Kmers distribution using kmer = %d\n" % KMER)
 				keys = sorted(kmers_perfile.items(), key = lambda x : x[1], reverse = True)
 				i = 0
