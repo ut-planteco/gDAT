@@ -43,7 +43,7 @@ for line in sys.stdin:
 			done = headers[col[0]] / l * 100.0
 			finished[col[0]] = True
 			diff = time.time() - start
-			remaining = round(diff / done * 100.0)
+			remaining = round(diff / done * 100.0 - diff)
 			sys.stderr.write("Processed %d/%d vsearch hits (%.2f%%), %ds remaining\n" % (headers[col[0]], l, done, remaining))
 		newline = [col[0], col[1].split(" ")[0], col[1], "0", col[2], "%s" % (int(col[3]) - int(col[4])), col[3], "1/1", col[6], col[7], col[8], col[9], col[7], col[9], col[3]]
 		sys.stdout.write("%s\n" % ("\t".join(newline)))	
