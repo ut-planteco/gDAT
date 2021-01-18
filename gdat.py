@@ -1664,6 +1664,8 @@ class VsearchFrame(BaseFrame):
 
     def check_fields(self):
         errors = []
+        if len(self.form_get('db')) == 0:
+            self.form_set('db', self.form_get('dbradio'))
         _database = self.form_get('db')
         _output = self.form_get('input')
         if os.path.isfile(self.form_get('input')) is False:
