@@ -8,6 +8,7 @@ import sys
 import operator
 import re
 import gzip
+import time
 
 """
 	Filters BLAST output to conserv space based on identity threshold and keeps track how many sequences have been parsed.
@@ -38,13 +39,17 @@ if l == 0:
 	l = 1
 
 last_l = 0
+start = time.time()
+
 for line in sys.stdin:
 	col = line.split("\t")
 	try:
 		if col[0] in headers and headers[col[0]] > last_l:
 			done = headers[col[0]] / l * 100.0
 			last_l = headers[col[0]]
-			sys.stderr.write("Processed %d/%d BLAST hits (%.2f%%)\n" % (headers[col[0]], l, done))
+			diff = time.time() - start
+			remaining = round(diff / done * 100.0)
+			sys.stderr.write("Processed %d/%d BLAST hits (%.2f%%), %ds remaining\n" % (headers[col[0]], l, done, remaining))
 		if float(col[4]) >= args.i:
 			sys.stdout.write(line)
 	except:

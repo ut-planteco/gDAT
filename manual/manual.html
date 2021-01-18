@@ -282,13 +282,13 @@ The pipeline needs certain third party software in order to complete all functio
 		</tr>
 		<tr>
 			<td>vsearch</td>
-			<td>chimera filtering<br>clustering</td>
+			<td>chimera filtering<br>clustering<br>combining paired-end reads<br>identifying reads</td>
 			<td>2.11.0</td>
 			<td><a href="https://github.com/torognes/vsearch" target="_blank">github.com/torognes/vsearch</a></td>
 		</tr>
 		<tr>
 			<td>BLAST+</td>
-			<td>compiling databases<br>identifiying reads<br>fetching reads from databases</td>
+			<td>compiling databases<br>identifying reads<br>fetching reads from databases</td>
 			<td>2.8.1+</td>
 			<td><a href="ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/" target="_blank">ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/</a></td>
 		</tr>
@@ -296,7 +296,7 @@ The pipeline needs certain third party software in order to complete all functio
 </div>
 <h2>Analysing and validating raw reads</h2>
 <img src="assets/pipeline_kmers.png" class="right">
-First suggested step is to check barcode and/or primer occurances and quality distribution for the sequences. Selecting "Analyse FASTQ files", users can select folder or multiple FASTQ files to run check against the reads. It is best to select forward and reverse reads separately to distinguish primers. Also forward and reverse primers can have different length. Users need to define kmer length, which can be the length of the barcode, primer or combination of them depending on the dataset. For each file or summary output is written into TXT file with most abundant kmers on the top and sequences quality distribution. In the results users can check against correct primers how well the primers are working in the dataset. If there are many errors, users can specify allowing mismatches in the primer when cleaning the sequences to allow fetching more sequences into downstream analyse.
+First suggested step is to check barcode and/or primer occurances and quality distribution for the sequences. Selecting "Analyse FASTQ files", users can select folder or multiple FASTQ files to run check against the reads. It is best to select forward and reverse reads separately to distinguish primers. Also forward and reverse primers can have different length. Users need to define kmer length, which can be the length of the barcode, primer or combination of them depending on the dataset. For each file or summary output is written into TXT file with most abundant kmers on the top and sequences quality distribution. In the results users can check against correct primers how well the primers are working in the dataset. If there are many errors, users can specify allowing mismatches in the primer when cleaning the sequences to allow fetching more sequences into downstream analyse. Next step is cleaning the reads but in certain workflows the order can be swapped and combining done before cleaning to improve sequence overall quality (overlap region has improved quality combined from both reads) and barcode information can help to determine pairing program to detect correct overlap region.  
 <table>
 	<tr>
 		<th>Select folder with FASTQ files<br>Select multiple FASTQ files</th>
@@ -433,6 +433,14 @@ When using paired-end reads, pipeline uses FLASh software to combine forward and
 		<td>Specify how the sequences are presented in the input file; this pipeline produces interleaved sequences, but there is possibility to use reads that are separated into two files.</td>
 	</tr>
 	<tr>
+		<th>Folder</th>
+		<td>Pipeline supports to swap order of the cleaning and combining paired-end reads. Folder option allows to use non-cleaned demulitplexed files inside the folder from Illumina run to combine automatically paired-end reads into one file. Sample names are taken from first part of the file name and added to FASTA/FASTQ header.</td>
+	</tr>
+	<tr>
+		<th>Program</th>
+		<td>Define which program is used to combine reads together. Pipeline has two options: FLASh and vsearch.</td>
+	</tr>
+	<tr>
 		<th>Minimum overlap</th>
 		<td>Specify minimum overlap to combine two sequences, default value is 10 bases.</td>
 	</tr>
@@ -497,7 +505,7 @@ Sequence data amplified using PCR can include chimeric sequences, i.e. an artefa
 </table>
 <h2>4. Identify reads with BLAST+</h2>
 <img src="assets/pipeline_blast.png" class="right">
-Once a cleaned, chimera-free set of sequences is generated, the next step is to assign taxonomy using a BLAST+ search against an appropriate reference database (e.g. Maarj<i>AM</i>, GB/NCBI). A small e-value speeds up the search and only find the best hits with longest alignments; however, when using short sequences, a higher e-value may be necessary reflecting the shorter alignment fragments. The GB/NCBI database is divided into smaller partitions named as nt.00, nt.01, etc. This helps to overcome some filesystem storage issues and also helps to reduce memory usage while running BLAST+. When using GB/NCBI BLAST+, user has option to run the BLAST+ sequentially againts separate partitions of GB/NCBI. To split the command into smaller batches, check "automatically run multiple partitions". If a particular job fails or is terminated by user, it can be rerun by selecting the database partition that was halted (e.g. nt.05) and it will automatically run BLAST+ where it left off. Once a partitioned BLAST+ search is complete, "Merge NCBI BLAST+ results" can be used to combine multiple BLAST+ outputs into single output. GB/NCBI BLAST+ should use more than 1 best hit to have more trustworthy result and allow to use common taxonomy functionality in the pivot table section.
+Once a cleaned, chimera-free set of sequences is generated, the next step is to assign taxonomy using a BLAST+ search against an appropriate reference database converted from FASTA to BLAST+ database (e.g. Maarj<i>AM</i>, GB/NCBI). A small e-value speeds up the search and only find the best hits with longest alignments; however, when using short sequences, a higher e-value may be necessary reflecting the shorter alignment fragments. The GB/NCBI database is divided into smaller partitions named as nt.00, nt.01, etc. This helps to overcome some filesystem storage issues and also helps to reduce memory usage while running BLAST+. When using GB/NCBI BLAST+, user has option to run the BLAST+ sequentially againts separate partitions of GB/NCBI. To split the command into smaller batches, check "automatically run multiple partitions". If a particular job fails or is terminated by user, it can be rerun by selecting the database partition that was halted (e.g. nt.05) and it will automatically run BLAST+ where it left off. Once a partitioned BLAST+ search is complete, "Merge NCBI BLAST+ results" can be used to combine multiple BLAST+ outputs into single output. GB/NCBI BLAST+ should use more than 1 best hit to have more trustworthy result and allow to use common taxonomy functionality in the pivot table section.
 <table>
 	<tr>
 		<th>FASTA file</th>
@@ -517,6 +525,23 @@ Once a cleaned, chimera-free set of sequences is generated, the next step is to 
 	</tr>
 </table>
 
+<h2>4. Identify reads with vsearch (additional option)</h2>
+<img src="assets/pipeline_vsearch_blast.png" class="right">
+Once a cleaned, chimera-free set of sequences is generated, the next step is to assign taxonomy using a vsesarch search against an appropriate reference database in FASTA format (e.g. Maarj<i>AM</i>). Output is converted to match BLAST+ output, making it possible to merge different results together and additional steps are compatible with vsearch results. "Merge NCBI BLAST+ results" can be used to combine multiple BLAST+ outputs into single output. 
+<table>
+	<tr>
+		<th>FASTA file</th>
+		<td>Define cleaned, chimera-free FASTA. Users can also use a clustered FASTA file to speed up the process.</td>
+	</tr>
+	<tr>
+		<th>Database file (*.fasta)</th>
+		<td>vsearch can use FASTA formated database Database files located in the db/ folder will be displayed here, but users have the option of opening a file from a different location using OPEN.</td>
+	</tr>
+	<tr>
+		<th>Best hits</th>
+		<td>Number of best hits to display. For custom curated databases (e.g. Maarj<i>AM</i>) it is sufficient to return the best hit.</td>
+	</tr>
+</table>
 <h2>5. Generate pivot table from BLAST+</h2>
 <img src="assets/pipeline_pivot.png" class="full">
 Once the BLAST+ search is cimplete, a sample vs taxon pivot table can be generated using particular filtering parameters. The pipeline procides identity- and alignment-based filtering. In order to achieve a good hit, a query sequence should match a database subject sequence with sufficiently complete alignment and high identity. In some cases it may be advisable to use a lower alignment threshold to retrieve a larger hit pool; for instance, if the quality of 454 sequences declines at the end of reads; or when using different primers compared to most of the reference set. However, it may also be advisable to clean the sequences again using the trimming parameter to cut sequences shorter. There is also the option to filter hits when they are located in a particular position within the amplicon. This relies on the reference database being trimmed to start from same position compared to the amplicon, so that both query and reference sequences start from the same position. The Maarj<i>AM</i> database sequences included with the pipeline are trimmed between NS31 and AML2 primers. The most variable section within this region is located between 70 to 300bp after the NS31 primer. Using this information to specify the alignment variable region parameter is helpful when usigng tagmentation based Illumina, where input sequences are located randomly within amplicon. 

@@ -225,15 +225,15 @@ Leave empty if an interleaved file is used.""",
  
         "cmode" : "Specify which method to use for chimera checking. With reference mode, users need to define the database FASTA file location. In de novo mode, sequences are first clustered with 97 percentage and cluster centroids are used as the reference for chimera checking. Using both methods in parallel is recommended.",
  
-        "database" : "Select a database in FASTA format (.fna, .fasta) to be used for chimera checking.",
+        "database" : "Select a database in FASTA format (.fna, .fasta) to be used for chimera checking/identifying sequences.",
 
         "blastdb" : "Select a database in BLAST+ format.",
  
         "blastdbradio" : "Select a prebuilt database in BLAST+ format from the db/ folder.",
  
-        "db" : "Select a database in FASTA format for chimera checking",
+        "db" : "Select a database in FASTA format for chimera checking/identifying sequences.",
  
-        "dbradio" : "Select a prebuilt database in FASTA format from the db/ folder for chimera checking",
+        "dbradio" : "Select a prebuilt database in FASTA format from the db/ folder for chimera checking/identifying sequences.",
  
         "blastinput" : "Specify a tab delimited BLAST+ output file, where each query sequence alignment hit against the reference database is shown.",
  
@@ -350,6 +350,8 @@ Leave empty if an interleaved file is used.""",
         "cskip" : "To speed up calculations and to get estimates quickly pipeline uses every 10th sequence to analyse.",
 
         "cout" : "Summarize for each file statistics separately.",
+
+        "program" : "Define which program to use to combine the reads.",
 
         "kmerlen" : "Specify kmer size to be used to calculate occurrences.",
 
@@ -586,7 +588,7 @@ Leave empty if an interleaved file is used.""",
         if tmp > 0:
             self.form_input("or select custom BLAST+ database file (*.nhr)", "file", 'blastdb', allowed_files = 'database')
         else:
-            self.form_title("No installed database found, read manual to install database")
+            self.form_title("No installed database found, read manual to install database. Copy files to db/ folder and convert with BLAST+ tool.")
             self.form_input("Select custom BLAST+ database file (*.nhr)", "file", "blastdb", allowed_files = 'database')
         if first_value:
             self.form_set("blastdbradio", first_value)
@@ -621,7 +623,7 @@ Leave empty if an interleaved file is used.""",
         if tmp > 0:
             self.form_input("or select custom database file (*.fasta)", "file", 'db', allowed_files = 'fasta')
         else:
-            self.form_title("No installed database found, read manual to install database")
+            self.form_title("No installed database found, read manual to install database. Copy FASTA files to db/ folder.")
             self.form_input("Select custom database file (*.fasta)", "file", "db", allowed_files = 'fasta')
         if first_value:
             self.form_set("dbradio", first_value)
@@ -739,6 +741,7 @@ class HomeFrame(BaseFrame):
             ['Cluster reads (optional)', ClusterFrame],
             ['3. Remove chimeric reads', ChimeraFrame],
             ['4. Identify reads with BLAST+', BlastFrame],
+            ['Identify reads with vsearch', VsearchFrame],
             ['5. Generate pivot table from BLAST+', PivotFrame],
             ['Generate Pivot table from cluster (optional)', PivotClusterFrame],
             ['6. Pick sequences from BLAST+', PickBlastFrame],
@@ -1610,40 +1613,6 @@ class BlastFrame(BaseFrame):
 
         if self.check_errors(errors) is False:
             if self.form_get('ncbi'):
-                """
-                # run BLASTs in partitions / not compatible with Windows as limited parameter length
-                # uses additional python script to run one by one partitions, can also continue
-                file_name = os.path.basename(self.form_get('blastdb'))
-                directory_name = os.path.dirname(self.form_get('blastdb'))
-                tmp = file_name.replace(".nhr", "").split(".")
-                tmp.pop()   # remove index
-                partitions = glob.glob("%s/%s.*.nhr" % (directory_name, ".".join(tmp)))
-                ids = {}
-                ids_sorted = []
-                for partition in partitions:
-                    partition_i = int(partition.split(".")[-2])
-                    ids[partition_i] = partition.replace(".nhr", "")
-                    ids_sorted.append(partition_i)
-                ids_sorted.sort()
-                predefined_id = int(self.form_get('blastdb').replace(".nhr", "").split(".")[-1])
-                commands = []
-                for i in ids:
-                    if predefined_id <= i:
-                        # prebuild BLAST commands
-                        _cmd = self.configuration['blastn_exe']
-                        if not '/' in _cmd and not '\\' in _cmd and os.path.isfile(_cmd) and os.name != "nt":
-                            _cmd = "./" + _cmd
-                        commands.append('%s -query "%s" -dust no -evalue %s -max_target_seqs %s -num_threads %d -db "%s" -outfmt "6 qseqid sseqid stitle evalue pident nident length frames qstart qend sstart send qlen slen score" > "%s.%d.blast"' %
-                        (_cmd,
-                        self.form_get('input'),
-                        self.form_get('evalue'),
-                        self.form_get('hits'),
-                        self.form_get('threads'),
-                        ids[i],
-                        _output,
-                        i))
-                self.run_command(" && ".join(commands), output = "%s.0.blast" % _output)
-                """
                 _cmd = self.configuration['blastn_exe']
                 if not '/' in _cmd and not '\\' in _cmd and os.path.isfile(_cmd) and os.name != "nt":
                     _cmd = "./" + _cmd
@@ -1683,13 +1652,52 @@ class BlastFrame(BaseFrame):
         self.form_title("Options")
         self.form_display_dbs()
         self.form_input("E-value", "entry", 'evalue', default = "1e-10")
-        self.form_input("Identity threshold", "int", 'identity', label_from = 0, label_to = 100, default = 95, active = -1)
+        self.form_input("Identity threshold", "int", 'identity', label_from = 0, label_to = 100, default = 80, active = -1)
         self.form_input("Best hits", "int", 'hits', label_from = 1, label_to = 100, default = 1, active = -1)
         self.form_input("NCBI BLAST+ or partitioned database", "check", "ncbi", box_label = 'automatically run multiple partitions')
         self.form_input("Number of threads", "int", 'threads', label_from = 0, label_to = 64, default = 1, active = -1)
         
         self.run_buttons()
 
+
+class VsearchFrame(BaseFrame):
+
+    def check_fields(self):
+        errors = []
+        _database = self.form_get('db')
+        _output = self.form_get('input')
+        if os.path.isfile(self.form_get('input')) is False:
+            errors.append("Input file is not selected")
+        if os.path.isfile("%s" % _database) is False:
+            errors.append("Database is not selected, use *.fasta extension")
+
+        if self.check_errors(errors) is False:
+                self.run_command('vsearch --usearch_global "%s" --db "%s" --id "%f" --maxaccepts "%d" --threads "%d" --notrunclabels --blast6out "-" | %s py/pipeline_vsearch_filter.py -f "%s" > "%s.blast"' %
+                    (self.form_get('input'),
+                    _database,
+                    self.form_get('identity') / 100.0,
+                    self.form_get('hits'),
+                    self.form_get('threads'),
+                    self.configuration['python_exe'],
+                    self.form_get('input'),
+                    _output), output = "%s.blast" % _output)
+
+
+    def create_widgets(self):
+        self.form_title("Identify reads with vsearch", heading = True)
+        
+        self.form_label("Use cleaned, combined or clustered reads for identification. FASTA format required (use FASTQ->FASTA conversion if needed)")
+                
+        self.form_title("Input parameters")
+        self.form_input("Select FASTA file (*.fasta)", "file", 'input', allowed_files = 'fasta')
+        
+        self.form_title("Options")
+        self.form_display_dbs_fasta()
+        self.form_input("Identity threshold", "int", 'identity', label_from = 0, label_to = 100, default = 80, active = -1)
+        self.form_input("Best hits", "int", 'hits', label_from = 1, label_to = 100, default = 1, active = -1)
+        self.form_input("Number of threads", "int", 'threads', label_from = 0, label_to = 64, default = 1, active = -1)
+        
+        self.run_buttons()
 
 class CombineFrame(BaseFrame):
 
@@ -1698,44 +1706,90 @@ class CombineFrame(BaseFrame):
         if self.form_get('interleaved') == 1:
             if os.path.isfile(self.form_get('forward')) is False:
                 errors.append("Interleaved file is not selected")
+            if self.form_get('folder'):
+                errors.append("Interleaved option is not available with demultiplexed option")
         else:
-            if os.path.isfile(self.form_get('forward')) is False:
-                errors.append("Forward read is not selected")
-            if os.path.isfile(self.form_get('reverse')) is False:
-                errors.append("Reverse read is not selected")
+            if self.form_get('folder'):
+                if os.path.isdir(self.params['folder'].get()) is False:
+                    errors.append("Folder does not exist")
+            else:
+                if os.path.isfile(self.form_get('forward')) is False:
+                    errors.append("Forward read is not selected")
+                if os.path.isfile(self.form_get('reverse')) is False:
+                    errors.append("Reverse read is not selected")
 
         _mismatch = 1.0 - self.form_get('identity') / 100.0
         _output = os.path.splitext(self.form_get('forward'))[0]
 
         if self.check_errors(errors) is False:
-            _convert = ""
-            if self.params['outputfasta'].get():
-                _convert = " && python py/pipeline_fastq_fasta.py -fq %s.combined.fastq" % _output
-            if self.params['interleaved'].get() == 1:
-                self.run_command('flash %s -c -m %d -M %d -x %f -t %s --interleaved-input "%s" > "%s.combined.fastq"%s' % 
+            if self.form_get('folder'):
+                self.run_command('python py/pipeline_combine_demultiplexed.py -fasta %d -o %d -m %d -M %d -x %f -t %s -p %d -folder "%s"' %
                     (
-                    "-O" if self.form_get('outies') else "",
-                    self.form_get('min_length'),
-                    self.form_get('max_length'),
-                    _mismatch,
-                    self.form_get('threads'),
-                    self.form_get('forward'),
-                    _output,
-                    _convert
-                    ), output = "%s.combined.fastq" % _output)
+                        self.form_get('outputfasta'),
+                        self.form_get('outies'),
+                        self.form_get('min_length'),
+                        self.form_get('max_length'),
+                        _mismatch,
+                        self.form_get('threads'),
+                        self.form_get('program'),
+                        self.form_get('folder')
+                    ), output = "%s/combined.fastq" % self.form_get('folder'))
             else:
-                self.run_command('flash %s -c -m %d -M %d -x %f -t %s "%s" "%s" > "%s.combined.fastq"%s' % 
-                    (
-                    "-O" if self.form_get('outies') else "",
-                    self.form_get('min_length'),
-                    self.form_get('max_length'),
-                    _mismatch,
-                    self.form_get('threads'),
-                    self.form_get('forward'),
-                    self.form_get('reverse'),
-                    _output,
-                    _convert
-                    ), output = "%s.combined.fastq" % _output)
+                _convert = ""
+                _vsearch_output = ""
+                if self.params['outputfasta'].get():
+                    _convert = " && python py/pipeline_fastq_fasta.py -fq %s.combined.fastq" % _output
+                    _vsearch_output = '--fastaout "%s.combined.fasta"' % _output
+                else:
+                    _vsearch_output = '--fastqout "%s.combined.fastq"' % _output
+                if self.params['interleaved'].get() == 1:
+                    if self.form_get("program") == 1:
+                        self.run_command('flash %s -c -m %d -M %d -x %f -t %s --interleaved-input "%s" > "%s.combined.fastq"%s' % 
+                            (
+                            "-O" if self.form_get('outies') else "",
+                            self.form_get('min_length'),
+                            self.form_get('max_length'),
+                            _mismatch,
+                            self.form_get('threads'),
+                            self.form_get('forward'),
+                            _output,
+                            _convert
+                            ), output = "%s.combined.fastq" % _output)
+                    else:
+                        self.run_command('python py/pipeline_split_interleaved.py -i "%s" && vsearch --fastq_mergepairs "%s.r1.fastq" --reverse "%s.r2.fastq" --threads %s --fastq_minovlen %s %s %s' % 
+                            (
+                            self.form_get('forward'),
+                            self.form_get('forward'),
+                            self.form_get('forward'),
+                            self.form_get('threads'),
+                            self.form_get('min_length'),
+                            "--fastq_allowmergestagger" if self.form_get('outies') else "",
+                            _vsearch_output
+                            ), output = "%s.combined.fastq" % _output)
+                else:
+                    if self.form_get("program") == 1:
+                        self.run_command('flash %s -c -m %d -M %d -x %f -t %s "%s" "%s" > "%s.combined.fastq"%s' % 
+                            (
+                            "-O" if self.form_get('outies') else "",
+                            self.form_get('min_length'),
+                            self.form_get('max_length'),
+                            _mismatch,
+                            self.form_get('threads'),
+                            self.form_get('forward'),
+                            self.form_get('reverse'),
+                            _output,
+                            _convert
+                            ), output = "%s.combined.fastq" % _output)
+                    else:
+                        self.run_command('vsearch --fastq_mergepairs "%s" --reverse "%s" --threads %s --fastq_minovlen %s %s %s' % 
+                            (
+                            self.form_get('forward'),
+                            self.form_get('reverse'),
+                            self.form_get('threads'),
+                            self.form_get('min_length'),
+                            "--fastq_allowmergestagger" if self.form_get('outies') else "",
+                            _vsearch_output
+                            ), output = "%s.combined.fastq" % _output)
 
     def create_widgets(self):
         self.form_title("Combine paired-end reads", heading = True)
@@ -1745,7 +1799,8 @@ class CombineFrame(BaseFrame):
         self.form_title("Input parameters")
         self.form_input("Select forward/interleaved reads (*.fastq)", "file", 'forward', allowed_files = 'fastq')
         self.form_input("Select reverse reads (*.fastq)", "file", 'reverse', allowed_files = 'fastq')
-        
+        self.form_input("Select folder with demultiplexed reads (R1/R2, *.fastq)", "folder", "folder")
+
         self.form_title("Options")
         self.form_input("Input file type", "radio", 'interleaved', box_label = 'interleaved', value = 1)
         self.form_input("", "radio", 'interleaved', box_label = 'separate files', value = 0, default = 1)
@@ -1755,6 +1810,8 @@ class CombineFrame(BaseFrame):
         self.form_input("Number of threads", "int", 'threads', label_from = 0, label_to = 64, default = 1, active = -1)
         self.form_input("Allow outies alignments", "check", 'outies', box_label = '', default = 0)
         self.form_input("Output FASTA file", "check", 'outputfasta', box_label = '', default = 1)
+        self.form_input("Program", "radio", "program", box_label = "FLASh", value = 1)
+        self.form_input("", "radio", "program", box_label = "vsearch", value = 2, default = 1)
         
         self.run_buttons()
 
@@ -1887,10 +1944,38 @@ class DemultiplexFrame(BaseFrame):
             self.params['fprimer'].set(self.params['fprimer'].get().split("[")[0])
         if self.form_get('rprimer'):
             self.params['rprimer'].set(self.params['rprimer'].get().split("[")[0])
-        if not self.form_get('adapter_on'):
+        if self.mode != -2 and not self.form_get('adapter_on'):
             self.form_set('adapter', '')
 
-        if self.mode == 1:
+        if self.mode == -2:
+            if os.path.isfile(self.params['fastq'].get()) is False:
+                errors.append("Input FASTQ not found")
+            #if self.form_hasvalue("qual") and os.path.isfile(self.params['qual'].get()) is False:
+            #    errors.append("Quality file not found")
+            if self.check_errors(errors) is False:
+                params = [
+                        "-f", "fastq",
+                        "-forward_primer", "fprimer",
+                        "-reverse_primer", "rprimer",
+                        "-q", "quality_avg",
+                        "-min_allowed_base", "min_allowed_base",
+                        "-ml", "fmin_len",
+                        "-tl", "fmax_len",
+                        "-trimq", "trimming_avg",
+                        "-trimw", "trimming_window",
+                        "-qf", "qual",
+                        "-homopolymer", "homopolymer",
+                        "-mismatch", "mismatch",
+                        "-allow_indel", "mismatch_indel"
+                    ]
+                if self.form_hasvalue("primers_mixed"):
+                    params.append("-primers_mixed")
+                    params.append("#1")
+                if self.form_hasvalue("outputfasta"):
+                    params.append("-fasta")
+                    params.append("#1")
+                self.run_command(" ".join(self.get_command("python py/pipeline_clean_combined.py", params)), output = "%s.cleaned.fasta" % self.form_get('f').replace(".fasta", "").replace(".fna", ""))                             
+        elif self.mode == 1:
             # 454/IonTorrent sequences cleaning block
             if os.path.isfile(self.params['fasta'].get()) is False:
                 errors.append("Input FASTA/FASTQ not found")
@@ -2031,10 +2116,14 @@ class DemultiplexFrame(BaseFrame):
         self.create_button("Single/Paired-end FASTQ (Illumina/PacBio) reads", lambda: self.change_frame(4), 5, 1, width = 45)
         self.create_label("For 454 and IonTorrent use FASTA + QUAL or FASTQ", 6, 1)
         self.create_button("FASTA+QUAL/FASTQ (454/IonTorrent) reads", lambda: self.change_frame(1), 7, 1, width = 45)
-        self._form_row = 8
+        self.create_label("Demultiplexed reads are combined into single FASTQ file by the pipeline", 8, 1)
+        self.create_button("FASTQ (Illumina) reads", lambda: self.change_frame(-2), 9, 1, width = 45)
+        self._form_row = 10
 
     def create_widgets_inputblock(self):
         self.form_title("Input parameters")
+        if self.mode == -2:
+            self.form_input("Select FASTQ file (*.fastq)", "file", 'fastq', allowed_files = 'fastq')            
         if self.mode == 1:
             self.form_input("Select FASTA/FASTQ file (*.fasta/*.fastq)", "file", 'fasta', allowed_files = 'fasta+fastq')
             self.form_input("Select QUAL file (*.qual)", "file", 'qual', allowed_files = 'qual')
@@ -2046,7 +2135,7 @@ class DemultiplexFrame(BaseFrame):
         if self.mode == 4:
             self.form_input("Select reverse reads file (*.fastq)", "file", 'rfastq', allowed_files = 'fastq')
             self.form_input("Select reverse oligos file (*.fastq)", "file", 'roligo', allowed_files = 'fastq')            
-        if self.mode != 2:
+        if self.mode != -2 and self.mode != 2:
             self.form_input("Select sample sheet file (*.txt, *.tsv, *.csv)", "file", 'barcode', allowed_files = 'txt')
             self.create_button("Check sample sheet file", lambda: PreviewGUI(self.form_get("barcode")), self._form_row, 2, width = 18)
             self._form_row += 1
@@ -2065,7 +2154,7 @@ class DemultiplexFrame(BaseFrame):
             "TCCTCCGCTTATTGATATGC[ITS4-ITS]"
         ]
         self.form_title("Sample sheet and primer parameters")
-        if self.mode != 2:
+        if self.mode != -2 and self.mode != 2:
             self.form_input("Define sample column", "int", 'sample_col', label_from = 1, label_to = 20, default = 1, checkbox = 'sample_col_chk', checkbox_default = True, active = 1)
             self.form_input("Define forward barcode column", "int", 'fbarcode_col', label_from = 1, label_to = 20, default = 2, active = 1)
             self.form_input("Define forward primer column", "int", 'fprimer_col', label_from = 1, label_to = 20, default = 3, active = 1)
@@ -2074,7 +2163,7 @@ class DemultiplexFrame(BaseFrame):
             self.form_input("Define reverse primer column", "int", 'rprimer_col', label_from = 1, label_to = 20, default = 5)
         self.form_input("Select forward primer", "dropdown", 'fprimer', values = fprimers)
         self.form_input("or provide forward primer sequence", "entry", 'fprimer')
-        if self.mode == 2 or self.mode == 4:
+        if self.mode == -2 or self.mode == 2 or self.mode == 4:
             self.form_input("Select reverse primer", "dropdown", 'rprimer', values = rprimers)
             self.form_input("or provide reverse primer sequence", "entry", 'rprimer')
 
@@ -2088,7 +2177,8 @@ class DemultiplexFrame(BaseFrame):
         else:
             self.form_input("Average quality (q)", "int", 'quality_avg', label_from = 0, label_to = 41, default = 30, active = -1)
         self.form_input("Minimum allowed quality for a base (q)", "int", 'min_allowed_base', label_from = 0, label_to = 41, default = 5)
-        self.form_input("Minimum quality for a base before trimming the end (q)", "int", 'min_base_trimmed', label_from = 0, label_to = 41, default = 10)
+        if self.mode != -2:
+            self.form_input("Minimum quality for a base before trimming the end (q)", "int", 'min_base_trimmed', label_from = 0, label_to = 41, default = 10)
         
         self.form_input("Average trimming window quality (q)", "int", 'trimming_avg', label_from = 0, label_to = 41, default = 20)
         self.form_input("Trimming window length (bp)", "int", 'trimming_window', label_from = 0, label_to = 1000, default = 50)
@@ -2103,10 +2193,11 @@ class DemultiplexFrame(BaseFrame):
             self.form_input("Reverse read trim length", "int", 'r_len', label_from = 0, label_to = 1000, default = 180)
         self.form_input("Truncate homopolymers to this length (bp)", "int", 'homopolymer', label_from = 4, label_to = 100, default = 8)
         
-        if self.mode != 1:
+        if self.mode != -2 and self.mode != 1:
             self.form_input("Ignore first bases", "int", 'ignore_bases', label_from = 0, label_to = 100, default = 3)
         
-        self.form_input("Overhang adapter sequence", "entry", 'adapter', default = 'CTGTCTCTTAT', active = 0)
+        if self.mode != -2:
+            self.form_input("Overhang adapter sequence", "entry", 'adapter', default = 'CTGTCTCTTAT', active = 0)
 
         if self.mode == 1:
             self.form_input("Allow mismatch", "check", 'mismatch_barcode', box_label = "barcode")
@@ -2115,17 +2206,21 @@ class DemultiplexFrame(BaseFrame):
         elif self.mode == 2:
             self.add_column()
             self.form_title("Filtering parameters")
-            self.form_input("Allow mismatch", "check", 'mismatch', box_label = "primer")
+            self.form_input("Allow mismatch", "check", 'mismatch', box_label = "primer", default = 1)
             #self.form_input("", "check", 'mismatch_indel', box_label = "indel")
-            self.form_input("Primers are mixed between forward and reverse", "check", 'primers_mixed', box_label = "")
+            self.form_input("Primers are mixed between forward and reverse", "check", 'primers_mixed', box_label = "", default = 1)
             self.form_input("Check subfolders", "check", 'subfolders', box_label = "", default = 1)
             self.form_input("Output FASTA", "check", "outputfasta", box_label = "")
             self.form_input("Use only forward reads", "check", "forwardreads", box_label = "")
             self.form_input("Use only reverse reads", "check", "reversereads", box_label = "")
         else:
-            self.form_input("Allow mismatch", "check", 'mismatch', box_label = "barcode and primer")
+            if self.mode == -2:
+                self.form_input("Allow mismatch", "check", 'mismatch', box_label = "primer", default = 1)
+            else:
+                self.form_input("Allow mismatch", "check", 'mismatch', box_label = "barcode and primer", default = 1)
             #self.form_input("", "check", 'mismatch_indel', box_label = "indel")
-            self.form_input("Primers are mixed between forward and reverse", "check", 'primers_mixed', box_label = "")
+            self.form_input("Primers are mixed between forward and reverse", "check", 'primers_mixed', box_label = "", default = 1)
+            self.form_input("Output FASTA", "check", "outputfasta", box_label = "")
 
     def create_widgets_input(self):
         if self.mode == 2:
@@ -2151,7 +2246,7 @@ class PythonGUI(tk.Tk):
 
     def __init__(self):
         tk.Tk.__init__(self)
-        self.title("gDAT pipeline")
+        self.title("gDAT pipeline v1.1")
         self.geometry("+0+5")
         try:
             self.iconbitmap("gdat.ico")
@@ -2239,7 +2334,7 @@ class ConsoleGUI(tk.Tk):
         self.fh = open("gdat.log", "a+")
         if self.fh:
             if sys.version_info[0] >= 3:
-                command = command.encode()
+                command = command.encode() 
             self.fh.write("[%s] Executing command '%s'\n" % (datetime.now().strftime("%d/%m/%Y %H:%M:%S"), command))
         print(command)
         self.title("Command output")

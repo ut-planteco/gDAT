@@ -33,6 +33,10 @@ Pipeline can be executed using `gdat.py` file with python or using double click 
 
 The gDAT documentation is available under the manual/ folder as HTML files that can be opened with browser or through GitHub when browsing to manual/ folder.
 
+## Database
+
+Pipeline includes MaarjAM database consisting of arbuscular mycorrhizal sequences from SSU gene region. Database uses virtual taxa (VT) concept, which are phylogenetically defined sequence groups roughly corresponding to species-level taxa. Pipeline allows usage of custom databases, copy FASTA files to db/ folder and files will be automatically shown in the GUI. For BLAST+ search, use "Build a BLAST+ database" function in the pipeline to convert the FASTA files into correct format.  
+
 ## License
 
 The gDAT is distributed under the GNU General Public License version 3. [CC-BY](https://creativecommons.org/licenses/by/3.0/)
@@ -40,6 +44,12 @@ The gDAT is distributed under the GNU General Public License version 3. [CC-BY](
 ## Examples
 
 Example datasets for 454 and Illumina data in various formats is provided in the example/ folder.
+
+## Releases
+
+* v1.0: Initial release (29.09.2020).
+
+* v1.1: Added support to use vsearch for pairing paired-end reads and vsearch global pairwise alignment search to identify sequences against reference database (18.01.2021).
 
 ## Citation
 
