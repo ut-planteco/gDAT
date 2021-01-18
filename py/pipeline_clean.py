@@ -602,10 +602,10 @@ for r1 in frh:
 						break
 			# trim based on minimum base criteria
 			if args.min_base_trimmed > 0:
-				for _i in range(len(fqual)):
+				for i in range(len(fqual)):
 					if ord(fqual[i]) - args.phred < args.min_base_trimmed:
-						fseq = fseq[:_i - 1]
-						fqual = fqual[:_i - 1] 
+						fseq = fseq[:i - 1]
+						fqual = fqual[:i - 1] 
 						break
 				if rseq:
 					for i in range(len(rqual)):
