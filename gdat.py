@@ -1758,9 +1758,13 @@ class CombineFrame(BaseFrame):
                             _convert
                             ), output = "%s.combined.fastq" % _output)
                     else:
-                        self.run_command('python py/pipeline_split_interleaved.py -i "%s" && vsearch --fastq_mergepairs "%s.r1.fastq" --reverse "%s.r2.fastq" --threads %s --fastq_minovlen %s %s %s' % 
+                        execute_name = "vsearch"
+                        if os.path.isfile("vsearch") and os.name != "nt":
+                          execute_name = "./vsearch"
+                        self.run_command('python py/pipeline_split_interleaved.py -i "%s" && %s --fastq_mergepairs "%s.r1.fastq" --reverse "%s.r2.fastq" --threads %s --fastq_minovlen %s %s %s' % 
                             (
                             self.form_get('forward'),
+                            execute_name,
                             self.form_get('forward'),
                             self.form_get('forward'),
                             self.form_get('threads'),
