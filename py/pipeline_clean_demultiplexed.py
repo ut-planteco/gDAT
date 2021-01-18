@@ -250,6 +250,10 @@ files_r = 0
 flookup_lens = {}
 rlookup_lens = {}
 
+if args.force_reverse:
+	args.forward_primer = args.reverse_primer
+	args.forward_trim = args.reverse_trim
+
 for col in files:
 	sample = col[2]
 	flookup = {}
@@ -547,10 +551,11 @@ for col in files:
 	else:
 		if col[1] and args.force_reverse:
 			name = col[1]
+			files_r += 1
 		else:
 			name = col[0]
+			files_f += 1
 		i = 0
-		files_f += 1
 		if name is '':
 			continue
 		file1_packed = False
