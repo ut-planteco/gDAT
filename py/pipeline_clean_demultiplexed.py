@@ -503,7 +503,10 @@ for col in files:
 										continue
 									_s += _
 									if not args.fasta:
-										_q += f1[_pos]
+										try:
+											_q += f1[_pos]
+										except:
+											continue
 								sequence1 = _s
 								if not args.fasta:
 									f1 = _q
@@ -637,7 +640,10 @@ for col in files:
 									continue
 								_s += _
 								if not args.fasta:
-									_q += line[_pos]
+									try:
+										_q += line[_pos]
+									except:
+										continue
 							sequence = _s
 							if not args.fasta:
 								line = _q
