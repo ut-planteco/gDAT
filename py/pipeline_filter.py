@@ -48,7 +48,7 @@ for line in sys.stdin:
 			done = headers[col[0]] / l * 100.0
 			last_l = headers[col[0]]
 			diff = time.time() - start
-			remaining = round(diff / done * 100.0)
+			remaining = round(diff / done * 100.0 - diff)
 			sys.stderr.write("Processed %d/%d BLAST hits (%.2f%%), %ds remaining\n" % (headers[col[0]], l, done, remaining))
 		if float(col[4]) >= args.i:
 			sys.stdout.write(line)
